@@ -1,0 +1,2 @@
+Defaults:apache !requiretty
+apache ALL = NOPASSWD:/var/www/html/api_asroot.sh *
