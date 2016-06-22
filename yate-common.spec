@@ -38,6 +38,7 @@ Requires:	/usr/bin/systemctl
 Requires:	/sbin/chkconfig
 Requires:	/sbin/service
 %endif
+Requires:	/bin/bash
 Requires:	/bin/tar
 Requires:	/bin/grep
 Requires:	/usr/bin/tail
