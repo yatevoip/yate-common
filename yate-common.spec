@@ -30,6 +30,7 @@ License:	GPL
 Vendor:		Null Team Impex SRL
 Packager:	Paul Chitescu <paulc@null.ro>
 Source:		%{tarname}.tar.gz
+Group:		Applications/Communication
 BuildArch:	noarch
 BuildRoot:	%{_tmppath}/%{tarname}-root
 %if "%{systemd}" != "0"
