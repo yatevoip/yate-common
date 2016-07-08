@@ -99,7 +99,7 @@ function checkValidIP(error,field_name,field_value,section_name)
     if (!field_value.length)
 	return true;
 
-    if (field_value.indexOf(":") == -1 || !DNS.pack(field_value)) {
+    if ((field_value.indexOf(".") == 1 && field_value.indexOf(":") == -1) || !DNS.pack(field_value)) {
 	error.reason = "Field '" + field_name + "' is not a valid IP address: '" + field_value + "' in section '" + section_name + "'";
 	error.error = 401;
 	return false;	
