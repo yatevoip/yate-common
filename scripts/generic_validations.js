@@ -45,7 +45,7 @@ function checkOnOff(error,field_name,field_value,section_name)
 }
 
 //Validate a field to be in a range or a regex
-function checkFieldValidity(error,section_name,field_name,field_value,min,max,regex)
+function checkFieldValidity(error,section_name,field_name,field_value,min,max,regex,fixed)
 {
     if (min !== undefined && max !== undefined)  {
         field_value = parseInt(field_value);
@@ -70,6 +70,13 @@ function checkFieldValidity(error,section_name,field_name,field_value,min,max,re
 	    return false;
 	}
     }
+
+    if (fixed != undefined && fixed != field_value) {
+	  error.reason = "Field '" + field_name + "' is not valid: '" + field_value + "'. It has to be " + fixed + " in section '" + section_name + "'.";
+	  error.error = 401;
+	  return false;
+    }
+
     return true;
 }
 
