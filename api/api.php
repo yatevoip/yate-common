@@ -289,8 +289,12 @@ function processRequest($json,$recv)
 	    $list = array();
 	    foreach($req_handlers as $handler) {
 		$res = $handler($req,$json,$recv,null);
-		if (is_array($res))
+		// some equipment might build nodes themself. Ex: satsite
+		// in this case merge to list instead of pushing to it
+		if (is_array($res) && !isset($res[0]))
 		    $list[] = $res;
+		elseif (is_array($res))
+		    $list = array_merge($list,$res);
 	    }
 	    return buildSuccess("node_type",$list);
 	case "get_node_logs":
