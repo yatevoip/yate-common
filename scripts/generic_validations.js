@@ -144,3 +144,49 @@ function validatePositiveNumber(error,param_name,param_value,section_name)
     }
     return true;
 }
+
+/**
+ * Validate geo location: Latitude, longitude dd.dddddd,ddd.dddddd format 
+ */ 
+function checkValidGeoLocation(error,field_name,field_value,section_name)
+{
+    var regexp = new RegExp(/^[-]?(([0-8]?[0-9])\.([0-9]+))|(90(\.0+)?),[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.([0-9]+))|180(\.0+)?)$/);
+    if (!regexp.test(field_value)) {
+	error.reason = "Field '" + param_name + "' is not a valid geo location: latitude, longitude dd.dddddd,ddd.dddddd format" + " in section '" + section_name +  "'.";
+	error.error = 401;
+	return false;
+    }
+    return true;
+}
+
+/**
+ * Validate float number
+ */ 
+function checkValidFloat(error,field_name,field_value,section_name)
+{
+    if (!field_value.length)
+	return true;
+    var regexp = new RegExp(/^[-]?([1-9][0-9]*|0)(\.[0-9]+)?$/);
+    if (!regexp.test(field_value)) {
+	error.reason = "Field '" + param_name + "' is not a valid float number" + " in section '" + section_name +  "'.";
+	error.error = 401;
+	return false;
+    }
+    return true;
+}
+
+/**
+ * Validate positive float number
+ */ 
+function checkPositiveFloat(error,field_name,field_value,section_name)
+{
+    if (!field_value.length)
+	return true;
+    var regexp = new RegExp(/^([1-9][0-9]*|0)(\.[0-9]+)?$/);
+    if (!regexp.test(field_value)) {
+	error.reason = "Field '" + param_name + "' is not a positive float number" + " in section '" + section_name +  "'.";
+	error.error = 401;
+	return false;
+    }
+    return true;
+}
