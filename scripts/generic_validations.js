@@ -56,7 +56,7 @@ function checkFieldValidity(error,section_name,field_name,field_value,min,max,re
 	}
 
 	if (field_value < min || field_value > max) {
-	    error.reason = "Field '" + field_name + "' is not valid: '" + field_value + "'. It has to be smaller then " + max + " and greater then " + min + " in section '" + section_name + "'.";
+	    error.reason = "Field '" + field_name + "' is not valid: '" + field_value + "'. It has to be greater than " + min + " and smalled than " + max + " in section '" + section_name + "'.";
 	    error.error = 401;
 	    return false;
 	}
