@@ -213,6 +213,15 @@ function strFix(str,len,pad)
     return str;
 }
 
+// Format time in milliseconds as seconds with 3 decimal places
+function fmtTime(msec)
+{
+    msec *= 1;
+    if (isNaN(msec))
+	return "0";
+    return (msec / 1000) + "." + strFix((Math.abs(msec) % 1000),-3,"0");
+}
+
 // Helper that returns "yes" or "no" for boolean input, optionally pads to specified length
 function yesNo(val,len,pad)
 {
