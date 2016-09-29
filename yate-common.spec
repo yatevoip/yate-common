@@ -24,7 +24,7 @@
 
 Summary:	Common files for Yate based products
 Name:		yate-common
-Version:	1.4
+Version:	1.5
 Release:	%{buildnum}%{?revision}%{?dist}
 License:	GPL
 Vendor:		Null Team Impex SRL
@@ -53,6 +53,7 @@ Requires:	php-json
 Requires:	php-sockets
 Requires:	php-sysvsem
 Requires:	yate-scripts
+Suggests:	yate-database
 Suggests:	vlan-utils
 
 
