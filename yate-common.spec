@@ -53,8 +53,9 @@ Requires:	php-json
 Requires:	php-sockets
 Requires:	php-sysvsem
 Requires:	yate-scripts
+Recommends:	vlan-utils
+Recommends:	netkit-telnet
 Suggests:	yate-database
-Suggests:	vlan-utils
 
 
 %description
