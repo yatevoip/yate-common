@@ -246,11 +246,12 @@ function onOff(val,len,pad)
 function oneCompletion(msg,str,part)
 {
     if ("" != part && str.indexOf(part) != 0)
-	return;
+	return false;
     var ret = msg.retValue();
     if ("" != ret)
 	ret += "\t";
     msg.retValue(ret + str);
+    return true;
 }
 
 /* vi: set ts=8 sw=4 sts=4 noet: */
