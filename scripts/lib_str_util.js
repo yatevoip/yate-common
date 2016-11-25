@@ -254,4 +254,21 @@ function oneCompletion(msg,str,part)
     return true;
 }
 
+// Prepare next page output parameters in command message
+function setPaging(msg,length,header)
+{
+    if (isNaN(msg.cmd_height) || (msg.cmd_height < 10))
+	return;
+    if (isNaN(header))
+	header = 3;
+    msg.cmd_header = header;
+    if (isNaN(msg.cmd_offset))
+	msg.cmd_offset = 0;
+    var winLen = msg.cmd_height - header;
+    if (length < winLen)
+	msg.cmd_finish = msg.cmd_offset + length;
+    if (length > 0)
+	msg.cmd_offset += winLen;
+}
+
 /* vi: set ts=8 sw=4 sts=4 noet: */
