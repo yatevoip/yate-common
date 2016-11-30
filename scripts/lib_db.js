@@ -44,27 +44,27 @@ function sqlQuery(query,account,async)
 }
 
 // Make a SQL query, return 1st column in 1st row, null if query failed or returned no records
-function valQuery(query,async)
+function valQuery(query,async,account)
 {
-    var res = sqlQuery(query,undefined,async);
+    var res = sqlQuery(query,account,async);
     if (!res)
 	return null;
     return res.getResult(0,0);
 }
 
 // Make a SQL query, return 1st row as Object, null if query failed or returned no records
-function rowQuery(query,async)
+function rowQuery(query,async,account)
 {
-    var res = sqlQuery(query,undefined,async);
+    var res = sqlQuery(query,account,async);
     if (!res)
 	return null;
     return res.getRow(0);
 }
 
 // Make a SQL query, return 1st column as Array, null if query failed or returned no records
-function colQuery(query,async)
+function colQuery(query,async,account)
 {
-    var res = sqlQuery(query,undefined,async);
+    var res = sqlQuery(query,account,async);
     if (!res)
 	return null;
     return res.getColumn(0);
