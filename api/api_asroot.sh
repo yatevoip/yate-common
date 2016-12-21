@@ -26,7 +26,11 @@ fi
 
 case "X$1" in
     Xget_node_config)
-	dir="/etc/yate/$2"
+	if [ "$2" = "sdr" ]; then
+	    dir="/etc/yate/"
+	else
+	    dir="/etc/yate/$2"
+	fi
 	if [ -d "$dir" ]; then
 	    cd "$dir"
 	    /usr/bin/tar -czf - *.conf

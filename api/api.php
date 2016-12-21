@@ -176,6 +176,8 @@ function getNodeConfig($node)
     if (!preg_match('/^([[:alnum:]_-]+)$/',$node))
 	return buildError(401,"Illegal node type");
     $dir = "/etc/yate/$node";
+    if ($node == "sdr") 
+        $dir = "/etc/yate/";
     if (!is_dir($dir))
 	return buildError(404,"Directory not found: $dir");
 
