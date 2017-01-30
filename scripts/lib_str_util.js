@@ -71,6 +71,27 @@ function hexStuff(str)
     return ret;
 }
 
+// Check if a string is a valid hexified string with a given minimum length.
+// Optionally, a maximum length can also be checked
+// Given length is in bytes
+// Function calls internally hexPack
+function isValidHex(str,minLen,maxLen)
+{
+    if (isMissing(str) || isNaN(minLen))
+	return false;
+    str = hexPack(str);
+    if ((str.length & 1) || !(str.match(/^[[:xdigit:]]+$/)))
+	return false;
+    if (str.length < 2 * minLen)
+	return false;
+    if (isMissing(maxLen))
+	return true;
+    if (isNaN(maxLen))
+	return false;
+
+    return (str.length <= 2 * maxLen);
+}
+
 // Encode a single byte in hexadecimal swapped nibble format
 function binSwap(b)
 {
