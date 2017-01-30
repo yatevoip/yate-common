@@ -4,7 +4,7 @@
 # This file is part of the YATE Project http://YATE.null.ro
 #
 # Yet Another Telephony Engine - a fully featured software PBX and IVR
-# Copyright (C) 2014-2016 Null Team
+# Copyright (C) 2014-2017 Null Team
 #
 # This software is distributed under multiple licenses;
 # see the COPYING file in the main directory for licensing
@@ -24,10 +24,23 @@
 #
 # [scripts]
 # /path/to/http_req.sh
+#
+# Or, to run multiple instances
+#
+# [scripts]
+# /path/to/http_req.sh=0
+# /path/to/http_req.sh=1
+# /path/to/http_req.sh=2
+# ...
 
 # install in Yate and run main loop
-echo "%%>setlocal:trackparam:http_req"
-echo "%%>install:95:http.request"
+if [ -n "$1" ]; then
+    echo "%%>setlocal:trackparam:http_req_$1"
+    echo "%%>install:95:http.request:instance:$1"
+else
+    echo "%%>setlocal:trackparam:http_req"
+    echo "%%>install:95:http.request"
+fi
 echo "%%>setlocal:restart:true"
 while read -r REPLY; do
     case "$REPLY" in
