@@ -48,14 +48,34 @@ while read -r REPLY; do
 	    # http.request handling
 	    id="${REPLY#*:*}"; id="${id%%:*}"
 	    params=":${REPLY#*:*:*:*:*:}:"
+	    opt=()
+	    len=0
 	    # extract parameters, assume we don't need unescaping
 	    sync="${params#*:wait=}"; sync="${sync%%:*}"
 	    url="${params#*:url=}"; url="${url%%:*}"
-	    acc="${params#*:accept=}"; acc="${acc%%:*}"
 	    # unescape just the % and : characters
 	    url=`echo "$url" | sed 's/%z/:/g; s/%%/%/g'`
-	    acc=`echo "$acc" | sed 's/%z/:/g; s/%%/%/g; s/ //g'`
-	    test -n "$acc" && acc="--header=Accept:$acc"
+	    tmp="${params#*:timeout=}"; tmp="${tmp%%:*}"
+	    tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; s/ //g'`
+	    if [ "$tmp" -ge "100" 2>/dev/null ]; then
+		tmp=`echo "$tmp" | sed 's/^\(.*\)\([0-9]\{3\}\)$/\1.\2/'`
+		opt[$((len++))]="--timeout=$tmp"
+	    fi
+	    tmp="${params#*:tries=}"; tmp="${tmp%%:*}"
+	    tmp=`echo "$tmp" | sed -n '/^[1-9]$/p'`
+	    test -n "$tmp" || tmp="1"
+	    opt[$((len++))]="--tries=$tmp"
+	    tmp="${params#*:accept=}"; tmp="${tmp%%:*}"
+	    tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; s/ //g'`
+	    test -n "$tmp" && opt[$((len++))]="--header=Accept:$tmp"
+	    tmp="${params#*:body=}"; tmp="${tmp%%:*}"
+	    if [ -n "$tmp" ]; then
+		tmp=`echo "$tmp" | sed 's/%z/:/g; s/%J/\n/g; s/%M/\r/g; s/%I/\t/g; s/%%/%/g'`
+		opt[$((len++))]="--post-data=$tmp"
+		tmp="${params#*:type=}"; tmp="${tmp%%:*}"
+		tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; s/ //g'`
+		test -n "$tmp" && opt[$((len++))]="--header=Content-Type:$tmp"
+	    fi
 	    resp=""
 	    case "X$sync" in
 		Xtrue|Xyes|Xon|Xenable|X1)
@@ -64,11 +84,11 @@ while read -r REPLY; do
 		    case "X$multi" in
 			Xtrue|Xyes|Xon|Xenable|X1)
 			    # return all lines of response escaped as a single string
-			    resp=`(wget -q -O - $acc "${url}" || echo "$mark$?_") </dev/null | sed 's/%/%%/g; s/:/%z/g; s/\t/%I/g; s/\r/%M/g; {:n;N;s/\n/%J/g;t n}; s/[[:cntrl:]]//g'`
+			    resp=`(wget -q -O - "${opt[@]}" "${url}" || echo "$mark$?_") </dev/null | sed 's/%/%%/g; s/:/%z/g; s/\t/%I/g; s/\r/%M/g; {:n;N;s/\n/%J/g;t n}; s/[[:cntrl:]]//g'`
 			    ;;
 			*)
 			    # keep only first line of response and escape it
-			    resp=`(wget -q -O - $acc "${url}" || echo "$mark$?_") </dev/null | head -1 | sed 's/[[:cntrl:]]//g; s/%/%%/g; s/:/%z/g'`
+			    resp=`(wget -q -O - "${opt[@]}" "${url}" || echo "$mark$?_") </dev/null | head -1 | sed 's/[[:cntrl:]]//g; s/%/%%/g; s/:/%z/g'`
 			    ;;
 		    esac
 		    case "X$resp" in
@@ -80,7 +100,7 @@ while read -r REPLY; do
 		    ;;
 		*)
 		    # execute asynchronously, don't care if succeeds or fails
-		    wget -q -O - $acc "${url}" </dev/null >/dev/null &
+		    wget -q -O - "${opt[@]}" "${url}" </dev/null >/dev/null &
 		    ;;
 	    esac
 	    if [ -n "$resp" ]; then
