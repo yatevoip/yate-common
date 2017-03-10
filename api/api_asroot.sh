@@ -29,7 +29,7 @@ case "X$1" in
 	dir="/etc/yate/$2"
 	if [ -d "$dir" ]; then
 	    cd "$dir"
-	    /usr/bin/tar -czf - *.conf *.json *.php *.crt --ignore-failed-read 2>/dev/null
+	    /usr/bin/tar -czf - *.conf *.json *.xml *.php *.crt --ignore-failed-read 2>/dev/null
 	else
 	    echo "Not a directory: $dir" >&2
 	    exit 20
