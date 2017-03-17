@@ -74,7 +74,20 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
     $msg->SetParam("module","http_api");
     $msg->SetParam("type",$type);
     $msg->SetParam("operation",$request);
-    $msg->SetParam("received",$recv);
+
+    if (is_array($recv)) {
+	$msg->SetParam("received",$recv["recv"]);
+	if (isset($recv["addr"]))
+	    $msg->SetParam("address",$recv["addr"]);
+	if (isset($recv["host"]))
+	    $msg->SetParam("ip_host",$recv["host"]);
+	if (isset($recv["port"]))
+	    $msg->SetParam("ip_port",$recv["port"]);
+	if (isset($recv["prot"]))
+	    $msg->SetParam("protocol",$recv["prot"]);
+    }
+    else
+	$msg->SetParam("received",$recv);
     if ($params) {
 	$json = json_encode($params);
 	$jlen = strlen($json);
@@ -370,6 +383,17 @@ function checkRequest($method = "POST")
 	    if (isset($_SERVER['REMOTE_ADDR'])) {
 		$serv = $_SERVER['REMOTE_ADDR'];
 		$recv .= " from $serv";
+		$recv = array("recv" => $recv, "host" => $serv);
+		if (isset($_SERVER['REMOTE_PORT'])) {
+		    $recv["port"] = $port = $_SERVER['REMOTE_PORT'];
+		    if (false !== strpos($serv,":"))
+			$recv["addr"] = "[$serv]:$port";
+		    else
+			$recv["addr"] = "$serv:$port";
+		}
+		else
+		    $recv["addr"] = $serv;
+		$recv["prot"] = isset($_SERVER['HTTPS']) ? "HTTPS" : "HTTP";
 	    }
 	    $out = processRequest($inp,$recv);
 	    if (isset($out["_type"])) {
