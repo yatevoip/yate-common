@@ -48,7 +48,7 @@ function checkOnOff(error,field_name,field_value,section_name)
 function checkFieldValidity(error,section_name,field_name,field_value,min,max,regex,fixed)
 {
     if (min !== undefined && max !== undefined)  {
-        field_value = parseInt(field_value);
+        field_value = parseInt(field_value,10);
 	if (isNaN(field_value)) {
 	    error.reason = "Field '" + field_name + "' is not a valid number: " + field_value + " in section '" + section_name + "'.";
 	    error.error = 401;
