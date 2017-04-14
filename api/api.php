@@ -283,6 +283,13 @@ function restartNode($node)
     return buildSuccess("restarted",$node);
 }
 
+function serviceState($node)
+{
+    if (!preg_match('/^([[:alnum:]_-]+)$/',$node))
+	return null;
+    return shell_exec("/var/www/html/api_asroot.sh node_service $node");
+}
+
 function processRequest($json,$recv)
 {
     global $req_handlers;
@@ -329,8 +336,20 @@ function processRequest($json,$recv)
 	if ($res !== null)
 	    break;
     }
-    if ($res !== null)
+    if ($res !== null) {
+	if ("get_node_status" == $req) {
+	    $serv = serviceState($node);
+	    if (null !== $serv) {
+		if (isset($res["status"]) && is_array($res["status"]))
+		    $res["status"]["service"] = $serv;
+		else if (isset($res["code"]) && isset($res["message"]) && $res["code"])
+		    $res["message"] .= "\n$serv";
+		else
+		    $res["service"] = $serv;
+	    }
+	}
 	return $res;
+    }
     return buildError(401,"Request '$req' not handled by any node.");
 }
 
