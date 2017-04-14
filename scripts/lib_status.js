@@ -79,6 +79,11 @@ function retrieveStats(prefix,module)
 		}
 		res.engine[n] = p;
 	    }
+	    if ("" == res.engine["runid"]) {
+		var n = 1 * Engine.runParams("runid");
+		if (!isNaN(n))
+		    res.engine["runid"] = n;
+	    }
 	    if (Engine.uptime) {
 		res.uptime = { };
 		res.uptime.wall = Engine.uptime(Engine.WallTime);
