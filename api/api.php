@@ -379,13 +379,15 @@ function logRequest($addr,$inp,$out = null)
 
 function checkRequest($method = "POST")
 {
+    $ctype = isset($_SERVER["CONTENT_TYPE"]) ? strtolower($_SERVER["CONTENT_TYPE"]) : "";
+    $ctype = preg_replace('/[[:space:]]*;.*$/',"",$ctype);
     $errcode = 0;
     $errtext = "";
     if ($_SERVER["REQUEST_METHOD"] != "POST") {
 	$errcode = 405;
 	$errtext = "Method Not Allowed";
     }
-    else if ($_SERVER["CONTENT_TYPE"] != "application/json" && $_SERVER["CONTENT_TYPE"] != "text/x-json") {
+    else if (("application/json" != $ctype) && ("text/x-json" != $ctype)) {
 	$errcode = 415;
 	$errtext = "Unsupported Media Type";
     }
