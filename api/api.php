@@ -27,7 +27,9 @@ $req_handlers = array();
 $api_version = "unknown";
 $logs_dir = "/var/log/json_api";
 $logs_file = (is_writeable($logs_dir)) ? "$logs_dir/requests_log.txt" : null;
-$max_requests = 3; // this may be altered in api_config.php
+// these may be altered in api_config.php
+$max_requests = 3;
+$cors_origin = "*";
 
 @include_once("api_version.php");
 @include_once("api_config.php");
@@ -379,11 +381,21 @@ function logRequest($addr,$inp,$out = null)
 
 function checkRequest($method = "POST")
 {
+    global $cors_origin;
     $ctype = isset($_SERVER["CONTENT_TYPE"]) ? strtolower($_SERVER["CONTENT_TYPE"]) : "";
     $ctype = preg_replace('/[[:space:]]*;.*$/',"",$ctype);
     $errcode = 0;
     $errtext = "";
-    if ($_SERVER["REQUEST_METHOD"] != "POST") {
+    if ("POST" != $_SERVER["REQUEST_METHOD"]) {
+	if (("OPTIONS" == $_SERVER["REQUEST_METHOD"]) 
+		&& isset($_SERVER["HTTP_ACCESS_CONTROL_REQUEST_METHOD"])
+		&& ("POST" == $_SERVER["HTTP_ACCESS_CONTROL_REQUEST_METHOD"])) {
+	    header("Access-Control-Allow-Origin: $cors_origin");
+	    header("Access-Control-Allow-Methods: POST");
+	    header("Access-Control-Allow-Headers: Content-Type");
+	    header("Content-Type: text/plain");
+	    exit;
+	}
 	$errcode = 405;
 	$errtext = "Method Not Allowed";
     }
@@ -392,13 +404,20 @@ function checkRequest($method = "POST")
 	$errtext = "Unsupported Media Type";
     }
     else {
+	$orig = isset($_SERVER["HTTP_ORIGIN"]) ? $_SERVER["HTTP_ORIGIN"] : "*";
 	$json_in = file_get_contents('php://input');;
 	$inp = json_decode($json_in,true);
 	if ($inp === null) {
 	    $errcode = 415;
 	    $errtext = "Unparsable JSON content";
 	}
+	else if (("*" != $cors_origin) && (0 !== strpos($orig,$cors_origin))) {
+	    $errcode = 403;
+	    $errtext = "Access Forbidden";
+	}
 	else {
+	    if (isset($_SERVER["HTTP_ORIGIN"]))
+		header("Access-Control-Allow-Origin: $orig");
 	    $serv = "unknown";
 	    $recv = gmdate(DATE_RFC850);
 	    if (isset($_SERVER['REMOTE_ADDR'])) {
@@ -440,7 +459,7 @@ function checkRequest($method = "POST")
 </head>
 <body>
 <h1><?php print($errtext); ?></h1>
-Expecting <b><?php print($method); ?></b> with type <b>application/json</b>
+Expecting <b><?php print($method); ?></b> with type <b>application/json</b> from <b><?php print($cors_origin); ?></b>
 </body>
 </html>
 <?php
