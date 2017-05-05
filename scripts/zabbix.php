@@ -165,7 +165,7 @@ class ZabbixServer
 	    }
 	    $len = 0;
 	    for ($i = 0; $i < 8; $i++)
-		$len |= ord(substr($this->header,$i + 5,1));
+		$len |= (ord(substr($this->header,$i + 5,1)) << (8 * $i));
 	    Yate::Debug("Will read $len octets payload from " . $this->info);
 	    $this->length = $len;
 	    $this->buffer = "";
