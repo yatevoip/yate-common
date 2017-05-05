@@ -63,8 +63,9 @@ class ZabbixServer
 	$this->host = $host;
 	$this->port = $port;
 	$this->ipv6 = (false !== strpos($host,":"));
-	$this->info = $this->ipv6 ? "Zabbix [$host]:$port" : "Zabbix $host:$port";
+	$this->info = $this->ipv6 ? "Zabbix server [$host]:$port" : "Zabbix server $host:$port";
 	$this->data = -1;
+	$this->delay = 60;
 	Yate::Debug("Created new " . $this->info);
     }
 
@@ -179,7 +180,7 @@ class ZabbixServer
 	if (strlen($this->buffer) < $this->length)
 	    return true;
 	$this->disconnect();
-	$this->timeout = $when + 30;
+	$this->timeout = $when + $this->delay;
 	$this->processData($this->buffer,$when);
 	return true;
     }
@@ -210,9 +211,8 @@ class ZabbixServer
 	    else if (isset($this->checks[$key]))
 		$this->checks[$key] = $val;
 	}
-	if ("" == $prefix) {
+	if ("" == $prefix)
 	    $this->data = 1;
-	}
     }
 
     function processData($data,$when)
@@ -227,6 +227,7 @@ class ZabbixServer
 	    if (isset($this->checks))
 		Yate::Debug($this->info . " " . (isset($json["info"]) ? $json["info"] : "returned success"));
 	    else if (isset($json["data"]) && is_array($json["data"])) {
+		$delay = 600;
 		foreach ($json["data"] as $data) {
 		    if (!isset($data["key"]))
 			continue;
@@ -236,13 +237,23 @@ class ZabbixServer
 		    if (!isset($this->checks))
 			$this->checks = array();
 		    $this->checks[substr($key,5)] = "";
+		    if (isset($data["delay"])) {
+			$dly = $data["delay"];
+			if (is_int($dly)) {
+			    if ($dly < 15)
+				$dly = 15;
+			    if ($delay > $dly)
+				$delay = $dly;
+			}
+		    }
 		}
 		if (isset($this->checks)) {
-		    Yate::Output($this->info . " wants: " . implode(", ",array_keys($this->checks)));
+		    Yate::Output($this->info . " wants every $delay seconds: " . implode(", ",array_keys($this->checks)));
+		    $this->delay = $delay;
 		    unset($this->timeout);
 		}
 		else
-		    Yate::Debug($this->info . " did not request any Yate items");
+		    Yate::Debug($this->info . " did not request any Yate items, will retry in " . $this->delay . " seconds");
 	    }
 	    return;
 	}
@@ -254,7 +265,7 @@ class ZabbixServer
 	if (isset($this->socket)) {
 	    if (!$this->readData($when)) {
 		$this->disconnect();
-		$this->timeout = $when + 30;
+		$this->timeout = $when + $this->delay;
 	    }
 	}
 	else if (isset($this->timeout) && ($when < $this->timeout))
@@ -264,7 +275,7 @@ class ZabbixServer
 		unset($this->timeout);
 	    else {
 		$this->disconnect();
-		$this->timeout = $when + 30;
+		$this->timeout = $when + $this->delay;
 	    }
 	}
     }
