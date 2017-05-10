@@ -111,7 +111,11 @@ class ZabbixServer
 	    // If we know what the server wants from us push the available data
 	    $json = array();
 	    foreach ($this->checks as $key => $val) {
-		if ("" === $val)
+		if (true === $val)
+		    $val = "true";
+		else if (false === $val)
+		    $val = "false";
+		else if ("" === $val)
 		    continue;
 		$json[] = array(
 		    "host" => ZabbixServer::$hostname,
