@@ -57,13 +57,13 @@ class ZabbixServer
 {
     public static $list = array();
     public static $hostname;
+    public static $iotimeout = 5;
 
     private function ZabbixServer($host,$port)
     {
 	$this->host = $host;
-	$this->port = $port;
-	$this->ipv6 = (false !== strpos($host,":"));
-	$this->info = $this->ipv6 ? "Zabbix server [$host]:$port" : "Zabbix server $host:$port";
+	$this->addr = (false !== strpos($host,":")) ? "[$host]:$port" : "$host:$port";
+	$this->info = "Zabbix server " . $this->addr;
 	$this->data = -1;
 	$this->delay = 60;
 	Yate::Debug("Created new " . $this->info);
@@ -72,33 +72,36 @@ class ZabbixServer
     function connect()
     {
 	$this->disconnect();
-	$skt = @socket_create($this->ipv6 ? AF_INET6 : AF_INET,SOCK_STREAM,SOL_TCP);
+	$skt = @stream_socket_client("tcp://" . $this->addr,$errno,$errstr,ZabbixServer::$iotimeout);
 	if (false === $skt) {
-	    Yate::Output("Could not create socket for " . $this->info . ": "
-		. socket_strerror( socket_last_error()));
+	    Yate::Output("Could not connect to " . $this->info . ": $errstr ($errno)");
 	    return false;
 	}
-	if (@socket_connect($skt,$this->host,$this->port)) {
-	    Yate::Debug("Connected to " . $this->info);
-	    $this->socket = $skt;
-	    return true;
-	}
-	else {
-	    Yate::Output("Could not connect to " . $this->info . ": "
-		. socket_strerror( socket_last_error()));
-	    socket_close($skt);
-	    return false;
-	}
+	stream_set_timeout($skt,ZabbixServer::$iotimeout);
+	Yate::Debug("Connected to " . $this->info);
+	$this->socket = $skt;
+	return true;
     }
 
     function disconnect()
     {
 	if (!isset($this->socket))
 	    return;
-	socket_close($this->socket);
+	fclose($this->socket);
 	unset($this->socket);
 	unset($this->header);
 	unset($this->length);
+    }
+
+    function reset($force) {
+	$when = time();
+	if ($force || !isset($this->checks)) {
+	    $this->disconnect();
+	    $this->data = -1;
+	    $this->delay = 60;
+	    $this->timeout = $when;
+	    unset($this->checks);
+	}
     }
 
     function sendData($when)
@@ -138,12 +141,10 @@ class ZabbixServer
 	}
 	$buf .= $json;
 	$len = strlen($buf);
-	if (socket_send($this->socket,$buf,$len,0) !== $len) {
+	if (fwrite($this->socket,$buf,$len) !== $len) {
 	    Yate::Output("Failed to send $len octets to " . $this->info);
 	    return false;
 	}
-	socket_set_nonblock($this->socket);
-	socket_shutdown($this->socket,1);
 	$this->header = "";
 	return true;
     }
@@ -151,7 +152,7 @@ class ZabbixServer
     function readData($when)
     {
 	if (!isset($this->length)) {
-	    $r = socket_read($this->socket,13 - strlen($this->header));
+	    $r = fread($this->socket,13 - strlen($this->header));
 	    if ((false === $r) || ("" == $r)) {
 		Yate::Output("Error reading header from " . $this->info);
 		return false;
@@ -166,12 +167,16 @@ class ZabbixServer
 	    $len = 0;
 	    for ($i = 0; $i < 8; $i++)
 		$len |= (ord(substr($this->header,$i + 5,1)) << (8 * $i));
+	    if (($len < 1) || ($len > 65536)) {
+		Yate::Output("Invalid payload length $len from " . $this->info);
+		return false;
+	    }
 	    Yate::Debug("Will read $len octets payload from " . $this->info);
 	    $this->length = $len;
 	    $this->buffer = "";
 	}
 
-	$r = socket_read($this->socket,$this->length - strlen($this->buffer));
+	$r = fread($this->socket,$this->length - strlen($this->buffer));
 	if ((false === $r) || ("" == $r)) {
 	    Yate::Output("Error reading payload from " . $this->info);
 	    return false;
@@ -224,16 +229,27 @@ class ZabbixServer
 		Yate::Output("Received " . $json["response"] . " response from " . $this->info);
 		return;
 	    }
-	    if (isset($this->checks))
-		Yate::Debug($this->info . " " . (isset($json["info"]) ? $json["info"] : "returned success"));
+	    if (isset($this->checks)) {
+		if (isset($json["info"])) {
+		    $info = $json["info"];
+		    if (preg_match('/failed: *[1-9]/',$info))
+			Yate::Output($this->info . " $info");
+		    else
+			Yate::Debug($this->info . " $info");
+		}
+		else
+		    Yate::Debug($this->info . " returned success");
+	    }
 	    else if (isset($json["data"]) && is_array($json["data"])) {
 		$delay = 600;
+		$count = 0;
 		foreach ($json["data"] as $data) {
 		    if (!isset($data["key"]))
 			continue;
 		    $key = $data["key"];
 		    if (substr($key,0,5) != "yate.")
 			continue;
+		    $count++;
 		    if (!isset($this->checks))
 			$this->checks = array();
 		    $this->checks[substr($key,5)] = "";
@@ -247,8 +263,8 @@ class ZabbixServer
 			}
 		    }
 		}
-		if (isset($this->checks)) {
-		    Yate::Output($this->info . " wants every $delay seconds: " . implode(", ",array_keys($this->checks)));
+		if ($count) {
+		    Yate::Output($this->info . " wants $count parameters every $delay seconds: " . implode(", ",array_keys($this->checks)));
 		    $this->delay = $delay;
 		    unset($this->timeout);
 		}
@@ -311,6 +327,12 @@ class ZabbixServer
 	}
     }
 
+    static function resetAll($force)
+    {
+	foreach (ZabbixServer::$list as $s)
+	    $s->reset($force);
+    }
+
     static function runTimers()
     {
 	$now = time();
@@ -339,6 +361,9 @@ Yate::SetLocal("restart",true);
 Yate::GetLocal("engine.nodename");
 Yate::GetLocal("engine.configname");
 
+// Suppressing all errors is brutal but @ just doesn't do the job
+set_error_handler(function(){return true;});
+
 for (;;) {
     $ev = Yate::GetEvent();
     if (false === $ev)
@@ -350,6 +375,16 @@ for (;;) {
 	    switch ($ev->name) {
 		case "engine.timer":
 		    ZabbixServer::runTimers();
+		    break;
+		case "engine.init":
+		    switch ($ev->GetValue("plugin")) {
+			case null:
+			case "":
+			    ZabbixServer::resetAll(false);
+			    break;
+			case "zabbix":
+			    ZabbixServer::resetAll(true);
+		    }
 		    break;
 		case "api.request":
 		    ZabbixServer::fetched($ev->GetValue("server"),$ev->GetValue("json"));
@@ -365,6 +400,7 @@ for (;;) {
 		    ZabbixServer::$hostname = $ev->retval . " - $node";
 		    // Got all configuration, now start processing the timer
 		    Yate::Watch("engine.timer");
+		    Yate::Watch("engine.init");
 		    break;
 	    }
 	    break;
