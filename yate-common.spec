@@ -15,6 +15,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+%define Suggests() %(rpm --help | fgrep -q ' --suggests ' && echo "Suggests:" || echo "##")
+%define Recommends() %(rpm --help | fgrep -q ' --recommends ' && echo "Recommends:" || echo "##")
 %{!?dist:%define dist %{?distsuffix:%distsuffix%{?product_version}}}
 %{!?systemd:%define systemd %(test -x /usr/bin/systemd && echo 1 || echo 0)}
 %{!?_unitdir:%define _unitdir /usr/lib/systemd/system}
@@ -53,9 +55,9 @@ Requires:	php-json
 Requires:	php-sockets
 Requires:	php-sysvsem
 Requires:	yate-scripts
-Recommends:	vlan-utils
-Recommends:	netkit-telnet
-Suggests:	yate-database
+%{Recommends}	vlan-utils
+%{Recommends}	netkit-telnet
+%{Suggests}	yate-database
 
 
 %description
