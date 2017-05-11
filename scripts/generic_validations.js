@@ -121,10 +121,11 @@ function checkValidInteger(error,field_name,field_value,section_name)
 {
     if (!field_value.length)
 	return true;
-    
+   
+    var saved_value = field_value; 
     field_value = parseInt(field_value);
     if (isNaN(field_value)) {
-	error.reason = "Field '" + field_name + "' is not numeric: '" + field_value + "' in section '" + section_name + "'.";
+	error.reason = "Field '" + field_name + "' is not numeric: '" + saved_value + "' in section '" + section_name + "'.";
 	error.error = 401;
 	return false;
     }
