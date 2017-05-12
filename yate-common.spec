@@ -48,8 +48,12 @@ Requires:	/usr/bin/tail
 Requires:	wget
 Requires:	sudo
 Requires:	net-tools
-Requires:	apache
+Requires:	webserver
+%if "%{?rhel}%{?fedora}" != ""
+Requires:	mod_php
+%else
 Requires:	apache-mod_php
+%endif
 Requires:	php-cli
 Requires:	php-json
 Requires:	php-sockets
