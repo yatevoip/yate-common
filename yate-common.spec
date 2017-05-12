@@ -18,7 +18,7 @@
 %define Suggests() %(LANG=C LC_MESSAGES=C rpm --help | fgrep -q ' --suggests ' && echo "Suggests:" || echo "##")
 %define Recommends() %(LANG=C LC_MESSAGES=C rpm --help | fgrep -q ' --recommends ' && echo "Recommends:" || echo "##")
 %{!?dist:%define dist %{?distsuffix:%distsuffix%{?product_version}}}
-%{!?systemd:%define systemd %(test -x /usr/bin/systemd && echo 1 || echo 0)}
+%{!?systemd:%define systemd %(test -x /usr/bin/systemctl && echo 1 || echo 0)}
 %{!?_unitdir:%define _unitdir /usr/lib/systemd/system}
 %{!?tarname:%define tarname %{name}-%{version}-%{buildnum}}
 
@@ -97,8 +97,8 @@ fi
 
 if [ "X$1" = "X1" ]; then
 %if "%{systemd}" != "0"
-    /usr/bin/systemctl enable httpd
-    /usr/bin/systemctl restart httpd
+    /usr/bin/systemctl enable httpd.service
+    /usr/bin/systemctl restart httpd.service
 %else
     /sbin/chkconfig httpd on
     /sbin/service httpd restart
