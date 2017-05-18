@@ -22,14 +22,14 @@
 #require "lib_str_util.js"
 
 // Retrieve engine and module(s) statistics
-function retrieveStats(prefix,module)
+function retrieveStats(prefix,module,details)
 {
     var found = false;
     var res = { };
     var msg = new Message("engine.status");
     if (isFilled(module))
 	msg.module = module;
-    msg.details = false;
+    msg.details = !!details;
     msg.dispatch(true);
     msg = msg.retValue();
     msg = msg.split('\n');
@@ -130,6 +130,34 @@ function retrieveStats(prefix,module)
 	    res[name][n] = p;
 	    found = true;
 	}
+
+	if ((line.length < 3) || !details)
+	    continue;
+	param = "" + line[2];
+	param = param.split(',');
+	for (var j = 0; j < param.length; j++) {
+	    var p = param[j];
+	    var sep = p.indexOf('=');
+	    if (sep <= 0)
+		continue;
+	    var n = "[" + p.substr(0,sep) + "]";
+	    p = p.substr(sep + 1);
+	    switch (p) {
+		case "true":
+		    p = true;
+		    break;
+		case "false":
+		    p = false;
+		    break;
+		case /^[0-9]+$/:
+		    p = 1 * p;
+		    break;
+	    }
+	    if (!res[name])
+		res[name] = { };
+	    res[name][n] = p;
+	    found = true;
+	}
     }
 
     if (found)
@@ -138,16 +166,16 @@ function retrieveStats(prefix,module)
 }
 
 // Merge extra submodule statistics
-function mergeStats(stats,module)
+function mergeStats(stats,module,details)
 {
     if (!stats)
 	return;
     if (Array.isArray(module)) {
 	for (var tmp of module)
-	    mergeStats(stats,tmp);
+	    mergeStats(stats,tmp,details);
     }
     else {
-	var tmp = retrieveStats(undefined,module);
+	var tmp = retrieveStats(undefined,module,details);
 	if (tmp) {
 	    for (var i in tmp)
 		stats[i] = tmp[i];

@@ -204,7 +204,7 @@ class ZabbixServer
 	    $m->SetParam("module","zabbix");
 	    $m->SetParam("type","control");
 	    $m->SetParam("operation","query_stats");
-	    $m->SetParam("type","control");
+	    $m->SetParam("details",true);
 	    $m->SetParam("server",$this->host);
 	    $m->Dispatch();
 	}
@@ -214,7 +214,7 @@ class ZabbixServer
     function processFetched($json,$prefix = "")
     {
 	foreach ($json as $key => $val) {
-	    $key = $prefix . $key;
+	    $key = str_replace('.[','[',$prefix . $key);
 	    if (is_array($val))
 		$this->processFetched($val,"$key.");
 	    else if (isset($this->checks[$key]))
