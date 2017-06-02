@@ -29,6 +29,7 @@ $logs_dir = "/var/log/json_api";
 $logs_file = (is_writeable($logs_dir)) ? "$logs_dir/requests_log.txt" : null;
 // these may be altered in api_config.php
 $max_requests = 3;
+$log_status = false;
 $cors_origin = "*";
 
 @include_once("api_version.php");
@@ -285,11 +286,18 @@ function restartNode($node)
     return buildSuccess("restarted",$node);
 }
 
-function serviceState($node)
+function serviceState($node,$quiet = false)
 {
     if (!preg_match('/^([[:alnum:]_-]+)$/',$node))
 	return null;
-    return shell_exec("/var/www/html/api_asroot.sh node_service $node");
+    $quiet = $quiet ? "_quiet" : "";
+    return shell_exec("/var/www/html/api_asroot.sh node_service$quiet $node");
+}
+
+function isOperational($obj)
+{
+    return isset($obj["status"]) && isset($obj["status"]["operational"])
+	&& $obj["status"]["operational"];
 }
 
 function processRequest($json,$recv)
@@ -340,7 +348,7 @@ function processRequest($json,$recv)
     }
     if ($res !== null) {
 	if ("get_node_status" == $req) {
-	    $serv = serviceState($node);
+	    $serv = serviceState($node,isOperational($res));
 	    if (null !== $serv) {
 		if (isset($res["status"]) && is_array($res["status"]))
 		    $res["status"]["service"] = $serv;
@@ -381,7 +389,7 @@ function logRequest($addr,$inp,$out = null)
 
 function checkRequest($method = "POST")
 {
-    global $cors_origin;
+    global $cors_origin,$log_status;
     $ctype = isset($_SERVER["CONTENT_TYPE"]) ? strtolower($_SERVER["CONTENT_TYPE"]) : "";
     $ctype = preg_replace('/[[:space:]]*;.*$/',"",$ctype);
     $errcode = 0;
@@ -445,9 +453,11 @@ function checkRequest($method = "POST")
 	    }
 	    else {
 		header("Content-type: application/json");
+		$log = $log_status || !isOperational($out);
 		$json_out = ($out === null) ? "{ }" : json_encode($out);
 		print $json_out;
-		logRequest($serv,$json_in,$json_out);
+		if ($log)
+		    logRequest($serv,$json_in,$json_out);
 	    }
 	    exit;
 	}

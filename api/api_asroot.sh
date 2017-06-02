@@ -56,7 +56,7 @@ case "X$1" in
 	    fi
 	fi
 	;;
-    Xnode_service)
+    Xnode_service|Xnode_service_quiet)
 	# Root is not required for this command but it's here for validations
 	if [ -f "/usr/lib/systemd/system/yate-$2.service" ]; then
 	    /usr/bin/systemctl status "yate-$2.service" | /usr/bin/sed -n 's/^ *\(Loaded\|Active\)\(.*\)$/\1\2/p'
@@ -64,7 +64,9 @@ case "X$1" in
 	    if [ -x "/etc/rc.d/init.d/yate-$2" ]; then
 		/sbin/service "yate-$2" status
 	    else
-		echo "Neither systemd nor Sys V init control file found for yate-$2" >&2
+		if [ "X$1" != "Xnode_service_quiet" ]; then
+		    echo "Neither systemd nor Sys V init control file found for yate-$2" >&2
+		fi
 		exit 1
 	    fi
 	fi
