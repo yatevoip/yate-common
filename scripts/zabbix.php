@@ -58,6 +58,7 @@ class ZabbixServer
     public static $list = array();
     public static $hostname;
     public static $iotimeout = 5;
+    public static $checktime = 600;
 
     private function ZabbixServer($host,$port)
     {
@@ -102,13 +103,18 @@ class ZabbixServer
 	    $this->timeout = $when;
 	    unset($this->checks);
 	}
+	else if (!isset($this->recheck))
+	    $this->recheck = $when;
     }
 
-    function sendData($when)
+    function sendData($check)
     {
-	$this->data = -1;
-	if (isset($this->checks)) {
+	if (isset($this->checks) && !$check) {
 	    // If we know what the server wants from us push the available data
+	    $when = $this->data;
+	    if ($when <= 0)
+		$when = time();
+	    $this->data = -1;
 	    $json = array();
 	    foreach ($this->checks as $key => $val) {
 		if (true === $val)
@@ -211,42 +217,39 @@ class ZabbixServer
 	return ($this->data > 0);
     }
 
-    function processFetched($json,$prefix = "")
+    function processFetched($json,$when,$prefix = "")
     {
+	$cnt = 0;
 	foreach ($json as $key => $val) {
 	    $key = str_replace('.[','[',$prefix . $key);
 	    if (is_array($val))
-		$this->processFetched($val,"$key.");
-	    else if (isset($this->checks[$key]))
+		$cnt += $this->processFetched($val,$when,"$key.");
+	    else if (isset($this->checks[$key])) {
 		$this->checks[$key] = $val;
+		$cnt++;
+	    }
 	}
-	if ("" == $prefix)
-	    $this->data = 1;
+	if ("" == $prefix) {
+	    $this->data = $when;
+	    Yate::Debug("Stored $cnt parameters timestamp $when for " . $this->info);
+	}
+	return $cnt;
     }
 
     function processData($data,$when)
     {
-	Yate::Debug("Received from " . $this->info . " $data");
+	Yate::Debug("Received from " . $this->info . " " . strlen($data) . " octets of data");
 	$json = json_decode($data,true);
 	if ($json && isset($json["response"])) {
 	    if ("success" != $json["response"]) {
 		Yate::Output("Received " . $json["response"] . " response from " . $this->info);
 		return;
 	    }
-	    if (isset($this->checks)) {
-		if (isset($json["info"])) {
-		    $info = $json["info"];
-		    if (preg_match('/failed: *[1-9]/',$info))
-			Yate::Output($this->info . " $info");
-		    else
-			Yate::Debug($this->info . " $info");
-		}
-		else
-		    Yate::Debug($this->info . " returned success");
-	    }
-	    else if (isset($json["data"]) && is_array($json["data"])) {
-		$delay = 600;
+	    if (isset($json["data"]) && is_array($json["data"])) {
+		$delay = ZabbixServer::$checktime;
 		$count = 0;
+		$this->data = -1;
+		unset($this->checks);
 		foreach ($json["data"] as $data) {
 		    if (!isset($data["key"]))
 			continue;
@@ -271,9 +274,21 @@ class ZabbixServer
 		    Yate::Output($this->info . " wants $count parameters every $delay seconds: " . implode(", ",array_keys($this->checks)));
 		    $this->delay = $delay;
 		    unset($this->timeout);
+		    $this->recheck = $when + ZabbixServer::$checktime;
 		}
 		else
 		    Yate::Debug($this->info . " did not request any Yate items, will retry in " . $this->delay . " seconds");
+	    }
+	    else if (isset($this->checks)) {
+		if (isset($json["info"])) {
+		    $info = $json["info"];
+		    if (preg_match('/failed: *[1-9]/',$info))
+			Yate::Output($this->info . " $info");
+		    else
+			Yate::Debug($this->info . " $info");
+		}
+		else
+		    Yate::Debug($this->info . " returned success");
 	    }
 	    return;
 	}
@@ -288,10 +303,16 @@ class ZabbixServer
 		$this->timeout = $when + $this->delay;
 	    }
 	}
+	else if (isset($this->recheck) && ($when >= $this->recheck)) {
+	    $this->recheck = $when + ZabbixServer::$checktime;
+	    Yate::Debug("Updating requested parameters list from " . $this->info);
+	    if ($this->connect())
+		$this->sendData(true);
+	}
 	else if (isset($this->timeout) && ($when < $this->timeout))
 	    return;
 	else if ($this->fetchData()) {
-	    if ($this->connect() && $this->sendData($when))
+	    if ($this->connect() && $this->sendData(false))
 		unset($this->timeout);
 	    else {
 		$this->disconnect();
@@ -323,9 +344,10 @@ class ZabbixServer
 	$json = json_decode($json,true);
 	if (!$json)
 	    return;
+	$now = time();
 	foreach (ZabbixServer::$list as $s) {
 	    if ($host == $s->host) {
-		$s->processFetched($json);
+		$s->processFetched($json,$now);
 		break;
 	    }
 	}
