@@ -6,7 +6,7 @@
  * JSON over HTTP network address API for Yate products
  *
  * Yet Another Telephony Engine - a fully featured software PBX and IVR
- * Copyright (C) 2014-2016 Null Team
+ * Copyright (C) 2014-2017 Null Team
  *
  * This software is distributed under multiple licenses;
  * see the COPYING file in the main directory for licensing
@@ -20,7 +20,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-function getNetAddress()
+function getNetAddress($filtered = true)
 {
     $output = array();
     $return = -1;
@@ -40,7 +40,7 @@ function getNetAddress()
 	if (preg_match('/^([^: ]+)[: ]/',$line,$matches)) {
 	    $ifc = $matches[1];
 	    $alias = null;
-	    if (preg_match('/^(lo|tun-)/',$ifc)) {
+	    if ($filtered && preg_match('/^(lo|tun-)/',$ifc)) {
 		$ifc = null;
 		continue;
 	    }

@@ -6,7 +6,7 @@
  * JSON over HTTP API access library for Yate products
  *
  * Yet Another Telephony Engine - a fully featured software PBX and IVR
- * Copyright (C) 2014-2016 Null Team
+ * Copyright (C) 2014-2017 Null Team
  *
  * This software is distributed under multiple licenses;
  * see the COPYING file in the main directory for licensing
@@ -333,7 +333,7 @@ function processRequest($json,$recv)
 	case "get_oem_serial":
 	    return getOemSerial();
 	case "get_net_address":
-	    return getNetAddress();
+	    return getNetAddress(getParam(getParam($json,"params"),"filtered",true));
 	case "get_node_type":
 	    if (!loadNodes())
 		return buildError(201,"No node plugin is installed.");
