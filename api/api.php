@@ -187,6 +187,25 @@ function loadNodes()
     return $cnt;
 }
 
+function getOemSerial()
+{
+    $file = "/etc/sysconfig/oem";
+    if (!is_file($file))
+	return buildError(404,"File not found: $file");
+    $fh = fopen($file,"r");
+    if (false === $fh)
+	return buildError(501,"Cannot open for reading: $file");
+    for (;;) {
+	$line = fgets($fh,4096);
+	if ($line === false)
+	    break;
+	if (preg_match('/^ *SERIAL *= *"?([[:alnum:]._-]+)"? *$/',$line,$match))
+	    return buildSuccess("serial",$match[1]);
+    }
+    pclose($fh);
+    return buildSuccess("serial",null);
+}
+
 function getNodeConfig($node)
 {
     if (!preg_match('/^([[:alnum:]_-]+)$/',$node))
@@ -311,6 +330,8 @@ function processRequest($json,$recv)
     switch ($req) {
 	case "get_api_version":
 	    return buildSuccess("api_version",$api_version);
+	case "get_oem_serial":
+	    return getOemSerial();
 	case "get_net_address":
 	    return getNetAddress();
 	case "get_node_type":
