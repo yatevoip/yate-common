@@ -192,7 +192,7 @@ function getOemSerial()
     $file = "/etc/sysconfig/oem";
     if (!is_file($file))
 	return buildError(404,"File not found: $file");
-    $fh = fopen($file,"r");
+    $fh = @fopen($file,"r");
     if (false === $fh)
 	return buildError(501,"Cannot open for reading: $file");
     for (;;) {
