@@ -5,6 +5,7 @@ PKGNAME := yate-common
 VERSION := $(shell sed -n 's/^Version:[[:space:]]*//p' $(PKGNAME).spec)
 RELEASE := $(shell sed -n 's/^%define[[:space:]]\+buildnum[[:space:]]\+//p' $(PKGNAME).spec)
 TARNAME := $(PKGNAME)-$(VERSION)-$(RELEASE)
+SRPMDIR := $(HOME)/rpmbuild/SRPMS
 SVNREV  := $(shell LANG=C LC_MESSAGES=C svn info 2>/dev/null | sed -n 's,^Last Changed Rev: *,,p')
 RPMOPT  :=
 
@@ -26,6 +27,24 @@ srpm-svn: check-svn tarball
 
 check-svn:
 	@if [ -z "$(SVNREV)" ]; then echo "Cannot determine SVN revision" >&2; false; fi
+
+build-svn: check-svn
+	@for f in "$(SRPMDIR)/$(TARNAME)_r$(SVNREV)."*.src.rpm ; do \
+	    if [ -s "$$f" ]; then \
+		echo "Alredy having $$f"; \
+		exit; \
+	    fi \
+	done ; \
+	$(MAKE) srpm-svn
+
+build-srpm:
+	@for f in "$(SRPMDIR)/$(TARNAME)."*.src.rpm ; do \
+	    if [ -s "$$f" ]; then \
+		echo "Alredy having $$f"; \
+		exit; \
+	    fi \
+	done ; \
+	$(MAKE) srpm
 
 tarball: clean
 	@wd=`pwd|sed 's,^.*/,,'`; \
