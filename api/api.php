@@ -30,6 +30,7 @@ $logs_file = (is_writeable($logs_dir)) ? "$logs_dir/requests_log.txt" : null;
 // these may be altered in api_config.php
 $max_requests = 3;
 $log_status = false;
+$api_secret = "";
 $cors_origin = "*";
 
 @include_once("api_version.php");
@@ -410,7 +411,7 @@ function logRequest($addr,$inp,$out = null)
 
 function checkRequest($method = "POST")
 {
-    global $cors_origin,$log_status;
+    global $cors_origin,$log_status,$api_secret;
     $ctype = isset($_SERVER["CONTENT_TYPE"]) ? strtolower($_SERVER["CONTENT_TYPE"]) : "";
     $ctype = preg_replace('/[[:space:]]*;.*$/',"",$ctype);
     $errcode = 0;
@@ -443,6 +444,14 @@ function checkRequest($method = "POST")
 	else if (("*" != $cors_origin) && (0 !== strpos($orig,$cors_origin))) {
 	    $errcode = 403;
 	    $errtext = "Access Forbidden";
+	}
+	else if (("" != $api_secret) && !isset($_SERVER["HTTP_X_AUTHENTICATION"])) {
+	    $errcode = 401;
+	    $errtext = "API Authentication Required";
+	}
+	else if (("" != $api_secret) && ($_SERVER["HTTP_X_AUTHENTICATION"] != $api_secret)) {
+	    $errcode = 403;
+	    $errtext = "API Authentication Rejected";
 	}
 	else {
 	    if (isset($_SERVER["HTTP_ORIGIN"]))
