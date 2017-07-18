@@ -76,6 +76,11 @@ while read -r REPLY; do
 		tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; s/ //g'`
 		test -n "$tmp" && opt[$((len++))]="--header=Content-Type:$tmp"
 	    fi
+	    tmp="${params#*:agent=}"; tmp="${tmp%%:*}"
+	    if [ -n "$tmp" ]; then
+		tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; s/^ \+//; s/ \+$//'`
+		test -n "$tmp" && opt[$((len++))]="--user-agent=$tmp"
+	    fi
 	    resp=""
 	    case "X$sync" in
 		Xtrue|Xyes|Xon|Xenable|X1)
