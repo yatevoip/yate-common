@@ -65,6 +65,7 @@ class ZabbixServer
 	$this->host = $host;
 	$this->addr = (false !== strpos($host,":")) ? "[$host]:$port" : "$host:$port";
 	$this->info = "Zabbix server " . $this->addr;
+	$this->show = "";
 	$this->data = -1;
 	$this->delay = 60;
 	Yate::Debug("Created new " . $this->info);
@@ -76,6 +77,7 @@ class ZabbixServer
 	$skt = @stream_socket_client("tcp://" . $this->addr,$errno,$errstr,ZabbixServer::$iotimeout);
 	if (false === $skt) {
 	    Yate::Output("Could not connect to " . $this->info . ": $errstr ($errno)");
+	    $this->show = "";
 	    return false;
 	}
 	stream_set_timeout($skt,ZabbixServer::$iotimeout);
@@ -98,6 +100,7 @@ class ZabbixServer
 	$when = time();
 	if ($force || !isset($this->checks)) {
 	    $this->disconnect();
+	    $this->show = "";
 	    $this->data = -1;
 	    $this->delay = 60;
 	    $this->timeout = $when;
@@ -105,6 +108,14 @@ class ZabbixServer
 	}
 	else if (!isset($this->recheck))
 	    $this->recheck = $when;
+    }
+
+    function showInfo($info)
+    {
+	if ($info == $this->show)
+	    return;
+	$this->show = $info;
+	Yate::Output($this->info . " $info");
     }
 
     function sendData($check)
@@ -242,7 +253,7 @@ class ZabbixServer
 	$json = json_decode($data,true);
 	if ($json && isset($json["response"])) {
 	    if ("success" != $json["response"]) {
-		Yate::Output("Received " . $json["response"] . " response from " . $this->info);
+		$this->showInfo("returned " . $json["response"] . " response");
 		return;
 	    }
 	    if (isset($json["data"]) && is_array($json["data"])) {
@@ -271,19 +282,19 @@ class ZabbixServer
 		    }
 		}
 		if ($count) {
-		    Yate::Output($this->info . " wants $count parameters every $delay seconds: " . implode(", ",array_keys($this->checks)));
+		    $this->showInfo("wants $count parameters every $delay seconds: " . implode(", ",array_keys($this->checks)));
 		    $this->delay = $delay;
 		    unset($this->timeout);
 		    $this->recheck = $when + ZabbixServer::$checktime;
 		}
 		else
-		    Yate::Debug($this->info . " did not request any Yate items, will retry in " . $this->delay . " seconds");
+		    $this->showInfo("did not request any Yate items, will retry in " . $this->delay . " seconds");
 	    }
 	    else if (isset($this->checks)) {
 		if (isset($json["info"])) {
 		    $info = $json["info"];
 		    if (preg_match('/failed: *[1-9]/',$info))
-			Yate::Output($this->info . " $info");
+			$this->showInfo($info);
 		    else
 			Yate::Debug($this->info . " $info");
 		}
