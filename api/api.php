@@ -242,26 +242,26 @@ function getNodeLogs($node,$params)
     switch (strtoupper("$level")) {
 	case "10":
 	case "ALL":
-	    $level = '/^([^<]+ )?<([^ ]+:)?(ALL|INFO|NOTE|CALL|MILD|WARN|STUB|CONF|GOON|TEST|FAIL)>/';
+	    $level = '/^([^<]+ )?<([^ ]+:)?(ALL|INFO|CALL|NOTE|MILD|WARN|STUB|CONF|CRIT|GOON|TEST|FAIL)>/';
 	    break;
 	case "9":
 	case "INFO":
-	    $level = '/^([^<]+ )?<([^ ]+:)?(INFO|NOTE|CALL|MILD|WARN|STUB|CONF|GOON|TEST|FAIL)>/';
+	    $level = '/^([^<]+ )?<([^ ]+:)?(INFO|CALL|NOTE|MILD|WARN|STUB|CONF|CRIT|GOON|TEST|FAIL)>/';
 	    break;
 	case "8":
-	case "NOTE":
-	    $level = '/^([^<]+ )?<([^ ]+:)?(NOTE|CALL|MILD|WARN|STUB|CONF|GOON|TEST|FAIL)>/';
+	case "CALL":
+	    $level = '/^([^<]+ )?<([^ ]+:)?(CALL|NOTE|MILD|WARN|STUB|CONF|CRIT|GOON|TEST|FAIL)>/';
 	    break;
 	case "7":
-	case "CALL":
-	    $level = '/^([^<]+ )?<([^ ]+:)?(CALL|MILD|WARN|STUB|CONF|GOON|TEST|FAIL)>/';
+	case "NOTE":
+	    $level = '/^([^<]+ )?<([^ ]+:)?(NOTE|MILD|WARN|STUB|CONF|CRIT|GOON|TEST|FAIL)>/';
 	    break;
 	case "6":
 	case "MILD":
-	    $level = '/^([^<]+ )?<([^ ]+:)?(MILD|WARN|STUB|CONF|GOON|TEST|FAIL)>/';
+	    $level = '/^([^<]+ )?<([^ ]+:)?(MILD|WARN|STUB|CONF|CRIT|GOON|TEST|FAIL)>/';
 	    break;
 	default:
-	    $level = '/^([^<]+ )?<([^ ]+:)?(WARN|STUB|CONF|GOON|TEST|FAIL)>/';
+	    $level = '/^([^<]+ )?<([^ ]+:)?(WARN|STUB|CONF|CRIT|GOON|TEST|FAIL)>/';
     }
     $lines = getParam($params,"lines",50);
     if ($lines < 10)
