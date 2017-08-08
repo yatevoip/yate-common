@@ -47,7 +47,7 @@
 
 require_once("libyate.php");
 
-Yate::Init();
+Yate::Init(false,"",0,"",24576);
 // Comment the next line to get output only in logs, not in rmanager
 Yate::Output(true);
 // Uncomment the next line to get debugging details by default
@@ -392,6 +392,7 @@ if (!count(ZabbixServer::$list)) {
     exit;
 }
 
+Yate::SetLocal("bufsize",16384);
 Yate::SetLocal("trackparam","zabbix");
 Yate::SetLocal("restart",true);
 // Request engine configuration, will start after receiving it
