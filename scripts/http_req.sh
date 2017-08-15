@@ -101,6 +101,9 @@ while read -r REPLY; do
 			    resp="${resp#$mark}"
 			    resp=":error=wget-${resp%%_}"
 			    ;;
+			X)
+			    resp=":"
+			    ;;
 		    esac
 		    ;;
 		*)
