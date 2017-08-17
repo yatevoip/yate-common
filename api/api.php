@@ -161,6 +161,17 @@ function buildError($code,$message)
     return $res;
 }
 
+function getVersion($node)
+{
+    global $req_handlers;
+    foreach($req_handlers as $handler) {
+	$ver = $handler("get_version",null,null,$node);
+	if (isset($ver["version"]))
+	    return $ver["version"];
+    }
+    return null;
+}
+
 function loadNode($type)
 {
     global $component_dir;
@@ -379,6 +390,14 @@ function processRequest($json,$recv)
 		else
 		    $res["service"] = $serv;
 	    }
+	    $ver = getVersion($node);
+	    if (null !== $ver)
+		$res["version"] = $ver;
+	}
+	else if ("query_stats" == $req && isset($res["stats"]["engine"])  && is_array($res["stats"]["engine"])) {
+	    $ver = getVersion($node);
+	    if (null !== $ver)
+		$res["stats"]["engine"]["node_version"] = $ver;
 	}
 	return $res;
     }
