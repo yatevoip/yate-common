@@ -172,23 +172,31 @@ function toMSISDN(num,cc,ton,skipCC)
 	case %+.%:
 	    // E.164 +CCNNNN
 	    return num.substr(1);
-	case %00.%:
-	    // ITU 00CCNNNN
+	case %0000zxxx.%:
+	    // Malformed international number 0000CCNNN
+	case %0011zxxx.%:
+	    // Australia default carrier 0011CCNNN
+	    return num.substr(4);
+	case %00zxxx.%:
+	    // ITU 00CCNNN
 	    return num.substr(2);
-	case %011.%:
-	    // USA 011CCNNNN
+	case %000zxxx.%:
+	    // Kenya, Tanzania, Uganda, some malformed numbers 000CCNNN
+	case %011zxxx.%:
+	    // USA 011CCNNN
 	    return num.substr(3);
-	case %0z.%:
-	    // 0NNNN various national
+	case %0zx.%:
+	    // 0NNN various national
 	    return cc + num.substr(1);
-	case %z.%:
-	    // NNNN various national
+	case %zx.%:
+	    // NNN various national
 	    if (cc && skipCC) {
 		// Check if someone entered CC without + in front
 		if (num.startsWith(cc))
 		    return num;
 	    }
 	    return cc + num;
+	// Else is not a number or too short to be a MSISDN
     }
     return null;
 }
