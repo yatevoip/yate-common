@@ -157,7 +157,7 @@ function parseBool(str,defVal)
 }
 
 // Convert a number to MSISDN (international format)
-function toMSISDN(num,cc,ton)
+function toMSISDN(num,cc,ton,skipCC)
 {
     switch (ton) {
 	case 0x11:
@@ -183,6 +183,11 @@ function toMSISDN(num,cc,ton)
 	    return cc + num.substr(1);
 	case %z.%:
 	    // NNNN various national
+	    if (cc && skipCC) {
+		// Check if someone entered CC without + in front
+		if (num.startsWith(cc))
+		    return num;
+	    }
 	    return cc + num;
     }
     return null;
