@@ -20,7 +20,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-require_once("/usr/share/yate/scripts/libyate.php");
+@include_once("/usr/share/yate/scripts/libyate.php");
 
 $component_dir = "/usr/share/yate/api/";
 $req_handlers = array();
@@ -42,7 +42,7 @@ function yateConnect($port,$track = "")
     global $yate_connected;
     if (isset($yate_connected))
 	return $yate_connected;
-    $yate_connected = Yate::Init(true,"127.0.0.1",$port,"",65536);
+    $yate_connected = class_exists("Yate") && Yate::Init(true,"127.0.0.1",$port,"",65536);
     if ($yate_connected) {
 	Yate::Output(true);
 	Yate::Debug(true);
