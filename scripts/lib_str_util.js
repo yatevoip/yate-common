@@ -49,11 +49,8 @@ function hexPack(str)
     if (isMissing(str))
 	return null;
     str = str.toLowerCase();
-    for (var i = 0; i < str.length; i++) {
-	if (" " == str.charAt(i))
-	    str = str.substr(0,i) + str.substr(i+1);
-    }
-    return str;
+    str = str.split(" ");
+    return str.join("");
 }
 
 // Insert spaces in a hex string, turn it to upper case
