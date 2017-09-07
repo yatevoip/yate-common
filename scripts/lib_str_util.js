@@ -49,6 +49,8 @@ function hexPack(str)
     if (isMissing(str))
 	return null;
     str = str.toLowerCase();
+    if (str.indexOf(" ") < 0)
+	return str;
     str = str.split(" ");
     return str.join("");
 }
