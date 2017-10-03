@@ -175,6 +175,8 @@ function toMSISDN(num,cc,ton,skipCC)
 	    return num.substr(1);
 	case %0000zxxx.%:
 	    // Malformed international number 0000CCNNN
+	case %0010zxxx.%:
+	    // Bolivia 0010CCNNN
 	case %0011zxxx.%:
 	    // Australia default carrier 0011CCNNN
 	    return num.substr(4);
