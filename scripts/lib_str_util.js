@@ -158,6 +158,8 @@ function parseBool(str,defVal)
 // Convert a number to MSISDN (international format)
 function toMSISDN(num,cc,ton,skipCC)
 {
+    if (isEmpty(num))
+	return null;
     switch (ton) {
 	case 0x11:
 	case "international":
