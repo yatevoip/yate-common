@@ -250,6 +250,28 @@ function strFix(str,len,pad)
     return str;
 }
 
+// Helper that returns a left or right aligned fixed length integer
+function numFix(num,len)
+{
+    if (isNaN(num))
+	return strFix(num,len);
+    var tmp = "" + num;
+    if (tmp.length <= Math.abs(len))
+	return strFix(tmp,len);
+    tmp = tmp.length - Math.abs(len);
+    if (tmp > 7)
+	tmp = ((num + 500000000000) / 1000000000000) + " T";
+    else if (tmp > 4)
+	tmp = ((num + 500000000) / 1000000000) + " G";
+    else if (tmp > 1)
+	tmp = ((num + 500000) / 1000000) + " M";
+    else
+	tmp = ((num + 500) / 1000) + " K";
+    if (tmp.length > len)
+	return strFix("#",len,"#");
+    return strFix(tmp,len);
+}
+
 // Format time in milliseconds as seconds with 3 decimal places
 function fmtTime(msec)
 {
