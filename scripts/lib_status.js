@@ -42,16 +42,16 @@ function retrieveStats(prefix,module,details)
 	    continue;
 	line = line.split(';');
 	var param = line[0];
-	if (param.startsWith("name=")) {
-	    param = param.substr(5);
-	    param = param.split(',');
-	    var name = param[0];
-	}
-	else if (isFilled(module)) {
+	if (isFilled(module)) {
 	    var name = module;
 	    var sep;
 	    while ((sep = name.indexOf(' ')) >= 0)
 		name = name.substr(0,sep) + '_' + name.substr(sep + 1);
+	}
+	else if (param.startsWith("name=")) {
+	    param = param.substr(5);
+	    param = param.split(',');
+	    var name = param[0];
 	}
 	else
 	    continue;
