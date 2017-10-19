@@ -272,6 +272,26 @@ function numFix(num,len)
     return strFix(tmp,len);
 }
 
+// Validate a number. Convert 'val' to number if not already done
+// Return defVal if given value is not a number or outside given interval and not clamped
+function checkInt(val,defVal,minVal,maxVal,clamp)
+{
+    val = 1 * val;
+    if (isNaN(val))
+	return defVal;
+    if (!isNaN(minVal) && val < minVal) {
+	if (undefined === clamp || clamp)
+	    return minVal;
+	return defVal;
+    }
+    if (!isNaN(maxVal) && val > maxVal) {
+	if (undefined === clamp || clamp)
+	    return maxVal;
+	return defVal;
+    }
+    return val;
+}
+
 // Format time in milliseconds as seconds with 3 decimal places
 function fmtTime(msec)
 {
