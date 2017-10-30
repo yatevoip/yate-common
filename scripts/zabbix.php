@@ -233,11 +233,23 @@ class ZabbixServer
 	$cnt = 0;
 	foreach ($json as $key => $val) {
 	    $key = str_replace('.[','[',$prefix . $key);
-	    if (is_array($val))
+	    if (is_array($val)) {
 		$cnt += $this->processFetched($val,$when,"$key.");
-	    else if (isset($this->checks[$key])) {
+		continue;
+	    }
+	    if (isset($this->checks[$key])) {
 		$this->checks[$key] = $val;
 		$cnt++;
+	    }
+	    if ("]" == substr($key,-1)) {
+		$key = substr($key,0,-1);
+		$val = explode("|",$val);
+		for ($i = 1; $i <= count($val); $i++) {
+		    if (isset($this->checks["$key|$i]"])) {
+			$this->checks["$key|$i]"] = $val[$i - 1];
+			$cnt++;
+		    }
+		}
 	    }
 	}
 	if ("" == $prefix) {
