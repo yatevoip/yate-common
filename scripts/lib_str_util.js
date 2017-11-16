@@ -267,7 +267,7 @@ function numFix(num,len)
 	tmp = ((num + 500000) / 1000000) + " M";
     else
 	tmp = ((num + 500) / 1000) + " K";
-    if (tmp.length > len)
+    if (tmp.length > Math.abs(len))
 	return strFix("#",len,"#");
     return strFix(tmp,len);
 }
