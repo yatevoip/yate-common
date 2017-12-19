@@ -205,7 +205,7 @@ function toMSISDN(num,cc,ton,skipCC)
 }
 
 // Compute the Luhn check digit for IMEI
-function computeLuhn(num)
+function computeLuhn(num,append)
 {
     if (isEmpty(num))
 	return "";
@@ -219,10 +219,12 @@ function computeLuhn(num)
 	}
 	n += d;
     }
+    if (!append)
+	num = "";
     n %= 10;
     if (!n)
-	return "0";
-    return "" + (10 - n);
+	return num + "0";
+    return num + (10 - n);
 }
 
 // Helper that returns a left or right aligned fixed length string
