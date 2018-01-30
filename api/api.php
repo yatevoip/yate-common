@@ -509,6 +509,23 @@ function checkRequest($method = "POST")
 				    $p = substr($k,0,$i);
 				    $k = substr($k,$i + 1);
 				}
+				switch ($v) {
+				    case "null":
+					$v = null;
+					break;
+				    case "true":
+					$v = true;
+					break;
+				    case "false":
+					$v = false;
+					break;
+				    case "0":
+					$v = 0;
+					break;
+				    default:
+					if (preg_match('/^-?[1-9][0-9]*$/',$v))
+					    $v = 1 * $v;
+				}
 				$o[$k] = $v;
 			}
 		    }
