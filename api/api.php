@@ -431,48 +431,104 @@ function logRequest($addr,$inp,$out = null)
 function checkRequest($method = "POST")
 {
     global $cors_origin,$log_status,$api_secret;
-    $ctype = isset($_SERVER["CONTENT_TYPE"]) ? strtolower($_SERVER["CONTENT_TYPE"]) : "";
-    $ctype = preg_replace('/[[:space:]]*;.*$/',"",$ctype);
+    if (("OPTIONS" == $_SERVER["REQUEST_METHOD"]) 
+	    && isset($_SERVER["HTTP_ACCESS_CONTROL_REQUEST_METHOD"])
+	    && ($_SERVER["HTTP_ACCESS_CONTROL_REQUEST_METHOD"] == $method)) {
+	header("Access-Control-Allow-Origin: $cors_origin");
+	header("Access-Control-Allow-Methods: $method");
+	header("Access-Control-Allow-Headers: Content-Type");
+	header("Content-Type: text/plain");
+	exit;
+    }
     $errcode = 0;
     $errtext = "";
-    if ("POST" != $_SERVER["REQUEST_METHOD"]) {
-	if (("OPTIONS" == $_SERVER["REQUEST_METHOD"]) 
-		&& isset($_SERVER["HTTP_ACCESS_CONTROL_REQUEST_METHOD"])
-		&& ("POST" == $_SERVER["HTTP_ACCESS_CONTROL_REQUEST_METHOD"])) {
-	    header("Access-Control-Allow-Origin: $cors_origin");
-	    header("Access-Control-Allow-Methods: POST");
-	    header("Access-Control-Allow-Headers: Content-Type");
-	    header("Content-Type: text/plain");
-	    exit;
-	}
-	$errcode = 405;
-	$errtext = "Method Not Allowed";
+    $orig = isset($_SERVER["HTTP_ORIGIN"]) ? $_SERVER["HTTP_ORIGIN"] : "*";
+    if (("*" != $cors_origin) && (0 !== strpos($orig,$cors_origin))) {
+	$errcode = 403;
+	$errtext = "Access Forbidden";
     }
-    else if (("application/json" != $ctype) && ("text/x-json" != $ctype)) {
-	$errcode = 415;
-	$errtext = "Unsupported Media Type";
+    else if (("" != $api_secret) && !isset($_SERVER["HTTP_X_AUTHENTICATION"])) {
+	$errcode = 401;
+	$errtext = "API Authentication Required";
+    }
+    else if (("" != $api_secret) && ($_SERVER["HTTP_X_AUTHENTICATION"] != $api_secret)) {
+	$errcode = 403;
+	$errtext = "API Authentication Rejected";
     }
     else {
-	$orig = isset($_SERVER["HTTP_ORIGIN"]) ? $_SERVER["HTTP_ORIGIN"] : "*";
-	$json_in = file_get_contents('php://input');;
-	$inp = json_decode($json_in,true);
-	if ($inp === null) {
-	    $errcode = 415;
-	    $errtext = "Unparsable JSON content";
+	$ctype = isset($_SERVER["CONTENT_TYPE"]) ? strtolower($_SERVER["CONTENT_TYPE"]) : "";
+	$ctype = preg_replace('/[[:space:]]*;.*$/',"",$ctype);
+	switch ($ctype) {
+	    case "application/json":
+	    case "text/x-json":
+		if ("POST" == $_SERVER["REQUEST_METHOD"]) {
+		    $json_in = file_get_contents('php://input');;
+		    $inp = json_decode($json_in,true);
+		    if ($inp === null) {
+			$errcode = 415;
+			$errtext = "Unparsable JSON content";
+		    }
+		}
+		else {
+		    $errcode = 405;
+		    $errtext = "Method Not Allowed";
+		}
+		break;
+	    case "application/x-www-form-urlencoded":
+	    case "":
+		$vars = null;
+		switch ($_SERVER["REQUEST_METHOD"]) {
+		    case "GET":
+			$vars = $_GET;
+			break;
+		    case "POST":
+			$vars = $_POST;
+			break;
+		    default:
+			$errcode = 405;
+			$errtext = "Method Not Allowed";
+		}
+		if (null !== $vars) {
+		    $inp = array();
+		    foreach ($vars as $k => $v) {
+			switch ($k) {
+			    case "request":
+			    case "node":
+				$inp[$k] = $v;
+				break;
+			    default:
+				$o = &$inp;
+				$p = "params";
+				for (;;) {
+				    if (!(isset($o[$p]) && is_array($o[$p])))
+					$o[$p] = array();
+				    $o = &$o[$p];
+				    $i = strpos($k,"/");
+				    if ($i <= 0)
+					break;
+				    $p = substr($k,0,$i);
+				    $k = substr($k,$i + 1);
+				}
+				$o[$k] = $v;
+			}
+		    }
+		    if (count($inp))
+			$json_in = json_encode($inp);
+		    else {
+			$errcode = 400;
+			$errtext = "Empty Request";
+		    }
+		    break;
+		}
+		if ($errcode)
+		    break;
+		// fall through
+	    default:
+		$errcode = 415;
+		$errtext = "Unsupported Media Type";
 	}
-	else if (("*" != $cors_origin) && (0 !== strpos($orig,$cors_origin))) {
-	    $errcode = 403;
-	    $errtext = "Access Forbidden";
-	}
-	else if (("" != $api_secret) && !isset($_SERVER["HTTP_X_AUTHENTICATION"])) {
-	    $errcode = 401;
-	    $errtext = "API Authentication Required";
-	}
-	else if (("" != $api_secret) && ($_SERVER["HTTP_X_AUTHENTICATION"] != $api_secret)) {
-	    $errcode = 403;
-	    $errtext = "API Authentication Rejected";
-	}
-	else {
+
+	if (!$errcode) {
 	    if (isset($_SERVER["HTTP_ORIGIN"]))
 		header("Access-Control-Allow-Origin: $orig");
 	    $serv = "unknown";
