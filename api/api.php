@@ -176,7 +176,7 @@ function loadNode($type)
 {
     global $component_dir;
     $file = "${component_dir}/${type}.php";
-    return is_file($file) && !!@include($file);
+    return (is_file($file) && !!@include($file)) || ("yate" == $type);
 }
 
 function loadNodes()
@@ -222,16 +222,18 @@ function getNodeConfig($node)
 {
     if (!preg_match('/^([[:alnum:]_-]+)$/',$node))
 	return buildError(401,"Illegal node type");
-    $dir = "/etc/yate/$node";
+    $conf = ("yate" == $node) ? "yate" : "yate/$node";
+    $dir = "/etc/$conf";
     if (!is_dir($dir))
 	return buildError(404,"Directory not found: $dir");
 
     $out = shell_exec("sudo /var/www/html/api_asroot.sh get_node_config $node");
     if ($out === null)
 	return buildError(501,"Cannot get configuration from: $dir");
+    $conf = ("yate" == $node) ? "yate" : "yate-$node";
     return array(
 	"_type" => "application/octet-stream",
-	"_file" => "yate-$node.config.tar.gz",
+	"_file" => "$conf.config.tar.gz",
 	"_body" => $out
     );
 }
@@ -240,7 +242,8 @@ function getNodeLogs($node,$params)
 {
     if (!preg_match('/^([[:alnum:]_-]+)$/',$node))
 	return buildError(401,"Illegal node type: $node");
-    $log = "/var/log/yate-$node";
+    $serv = ("yate" == $node) ? "yate" : "yate-$node";
+    $log = "/var/log/$serv";
     if (!is_file($log))
 	return buildError(404,"Log file not found: $log");
 
@@ -379,6 +382,8 @@ function processRequest($json,$recv)
 	if ($res !== null)
 	    break;
     }
+    if ((null === $res) && ("yate" == $node) && ("get_node_status" == $req))
+	$res = array("status" => array("level" => "MILD", "state" => "Unknown"));
     if ($res !== null) {
 	if ("get_node_status" == $req) {
 	    $serv = serviceState($node,isOperational($res));

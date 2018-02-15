@@ -24,9 +24,17 @@ if (echo "$2" | /bin/grep -q -v '^[[:alnum:]_.-]\+$') 2>/dev/null; then
     exit 1
 fi
 
+if [ "X$2" = "Xyate" ]; then
+    conf="yate"
+    serv="yate"
+else
+    conf="yate/$2"
+    serv="yate-$2"
+fi
+
 case "X$1" in
     Xget_node_config)
-	dir="/etc/yate/$2"
+	dir="/etc/$conf"
 	if [ -d "$dir" ]; then
 	    cd "$dir"
 	    /usr/bin/tar -czf - *.conf *.json *.xml *.php *.crt --ignore-failed-read 2>/dev/null
@@ -36,7 +44,7 @@ case "X$1" in
 	fi
 	;;
     Xget_node_logs)
-	log="/var/log/yate-$2"
+	log="/var/log/$serv"
 	if [ -f "$log" ]; then
 	    /usr/bin/tail -c 500000 "$log"
 	else
@@ -45,27 +53,27 @@ case "X$1" in
 	fi
 	;;
     Xnode_restart)
-	if [ -f "/usr/lib/systemd/system/yate-$2.service" ]; then
-	    /usr/bin/systemctl restart "yate-$2.service" >&2 && echo "OK"
+	if [ -f "/usr/lib/systemd/system/$serv.service" ]; then
+	    /usr/bin/systemctl restart "$serv.service" >&2 && echo "OK"
 	else
-	    if [ -x "/etc/rc.d/init.d/yate-$2" ]; then
-		/sbin/service "yate-$2" restart >&2 && echo "OK"
+	    if [ -x "/etc/rc.d/init.d/$serv" ]; then
+		/sbin/service "$serv" restart >&2 && echo "OK"
 	    else
-		echo "Neither systemd nor Sys V init control file found for yate-$2" >&2
+		echo "Neither systemd nor Sys V init control file found for $serv" >&2
 		exit 1
 	    fi
 	fi
 	;;
     Xnode_service|Xnode_service_quiet)
 	# Root is not required for this command but it's here for validations
-	if [ -f "/usr/lib/systemd/system/yate-$2.service" ]; then
-	    /usr/bin/systemctl status "yate-$2.service" | /usr/bin/sed -n 's/^ *\(Loaded\|Active\)\(.*\)$/\1\2/p'
+	if [ -f "/usr/lib/systemd/system/$serv.service" ]; then
+	    /usr/bin/systemctl status "$serv.service" | /usr/bin/sed -n 's/^ *\(Loaded\|Active\)\(.*\)$/\1\2/p'
 	else
-	    if [ -x "/etc/rc.d/init.d/yate-$2" ]; then
-		/sbin/service "yate-$2" status
+	    if [ -x "/etc/rc.d/init.d/$serv" ]; then
+		/sbin/service "$serv" status
 	    else
 		if [ "X$1" != "Xnode_service_quiet" ]; then
-		    echo "Neither systemd nor Sys V init control file found for yate-$2" >&2
+		    echo "Neither systemd nor Sys V init control file found for $serv" >&2
 		fi
 		exit 1
 	    fi
