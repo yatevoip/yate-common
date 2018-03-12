@@ -21,6 +21,7 @@
  */
 
 @include_once("/usr/share/yate/scripts/libyate.php");
+@include_once("/usr/share/yate/scripts/yateversn.php");
 
 $component_dir = "/usr/share/yate/api/";
 $req_handlers = array();
@@ -163,12 +164,14 @@ function buildError($code,$message)
 
 function getVersion($node)
 {
-    global $req_handlers;
+    global $req_handlers, $yate_version;
     foreach($req_handlers as $handler) {
 	$ver = $handler("get_version",null,null,$node);
 	if (isset($ver["version"]))
 	    return $ver["version"];
     }
+    if (("yate" == $node) && isset($yate_version))
+	return $yate_version;
     return null;
 }
 
