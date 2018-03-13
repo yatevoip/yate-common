@@ -340,7 +340,7 @@ function isOperational($obj)
 function processRequest($json,$recv)
 {
     global $req_handlers;
-    global $api_version;
+    global $api_version, $yate_version;
     $req = getParam($json,"request");
     if (paramMissing($req))
 	return buildError(402,"Missing 'request' parameter.");
@@ -406,6 +406,8 @@ function processRequest($json,$recv)
 	    $ver = getVersion($node);
 	    if (null !== $ver)
 		$res["stats"]["engine"]["node_version"] = $ver;
+	    if (isset($yate_version))
+		$res["stats"]["engine"]["yate_version"] = $yate_version;
 	}
 	return $res;
     }
