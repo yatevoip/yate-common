@@ -126,11 +126,18 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
     return buildError(200,$ev ? "Timeout waiting for Yate response." : "Unexpectedly disconnected from Yate.");
 }
 
-function addHandler($handler)
+function addHandler($handler, $name = null)
 {
     global $req_handlers;
     if (is_callable($handler)) {
-	$req_handlers[] = $handler;
+	$res = true;
+	if (null !== $name) {
+	    if (isset($req_handlers[$name]))
+		$res = $req_handlers[$name];
+	    $req_handlers[$name] = $handler;
+	}
+	else
+	    $req_handlers[] = $handler;
 	return true;
     }
     return false;
@@ -179,10 +186,10 @@ function loadNode($type)
 {
     global $component_dir;
     $file = "${component_dir}/${type}.php";
-    return (is_file($file) && !!@include($file)) || ("yate" == $type);
+    return (is_file($file) && !!@include_once($file)) || ("yate" == $type);
 }
 
-function loadNodes()
+function loadNodes($prefix = null)
 {
     global $component_dir;
     $handle = @opendir($component_dir);
@@ -192,10 +199,12 @@ function loadNodes()
     while (false !== ($file = readdir($handle))) {
 	if (substr($file,-4) != '.php')
 	    continue;
+	if ((null !== $prefix) && ("" != $prefix) && (substr(substr($file,0,-4),0,strlen($prefix)) != $prefix))
+	    continue;
 	$file = "${component_dir}/${file}";
 	if (!is_file($file))
 	    continue;
-	if (@include($file))
+	if (@include_once($file))
 	    $cnt++;
     }
     closedir($handle);
@@ -345,6 +354,8 @@ function processRequest($json,$recv)
     if (paramMissing($req))
 	return buildError(402,"Missing 'request' parameter.");
     $node = getParam($json,"node");
+    if ((null !== $node) && ("" != $node) && !preg_match('/^[[:alnum:]_-]+$/',$node))
+	return buildError(401,"Illegal 'node' parameter.");
     switch ($req) {
 	case "get_api_version":
 	    return buildSuccess("api_version",$api_version);
@@ -411,7 +422,8 @@ function processRequest($json,$recv)
 	}
 	return $res;
     }
-    return buildError(401,"Request '$req' not handled by any node.");
+    $node = paramMissing($node) ? "any node" : "node '$node'";
+    return buildError(401,"Request '$req' not handled by $node.");
 }
 
 function logRequest($addr,$inp,$out = null)
