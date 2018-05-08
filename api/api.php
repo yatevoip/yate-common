@@ -230,22 +230,31 @@ function getOemSerial()
     return buildSuccess("serial",null);
 }
 
-function getNodeConfig($node)
+function getNodeConfig($node,$file)
 {
     if (!preg_match('/^([[:alnum:]_-]+)$/',$node))
 	return buildError(401,"Illegal node type");
+    if (("" == $file) || (null === $file))
+	$file = "";
+    else if (!preg_match('/^([[:alnum:]_.-]+)$/',$file))
+	return buildError(401,"Illegal file name");
     $conf = ("yate" == $node) ? "yate" : "yate/$node";
     $dir = "/etc/$conf";
     if (!is_dir($dir))
 	return buildError(404,"Directory not found: $dir");
+    if (("" != $file) && !is_file("$dir/$file"))
+	return buildError(404,"File not found: $dir/$file");
 
-    $out = shell_exec("sudo /var/www/html/api_asroot.sh get_node_config $node");
+    if ("" != $file)
+	$file = " $file";
+    $out = shell_exec("sudo /var/www/html/api_asroot.sh get_node_config $node$file");
     if ($out === null)
-	return buildError(501,"Cannot get configuration from: $dir");
+	return buildError(501,"Cannot get configuration from: $dir$file");
     $conf = ("yate" == $node) ? "yate" : "yate-$node";
+    $file = ("" == $file) ? "config.tar.gz" : substr($file,1);
     return array(
 	"_type" => "application/octet-stream",
-	"_file" => "$conf.config.tar.gz",
+	"_file" => "$conf.$file",
 	"_body" => $out
     );
 }
@@ -380,7 +389,7 @@ function processRequest($json,$recv)
 	case "get_node_logs":
 	    return getNodeLogs($node,getParam($json,"params"));
 	case "get_node_config":
-	    return getNodeConfig($node);
+	    return getNodeConfig($node,getParam(getParam($json,"params"),"file"));
 	case "node_restart":
 	    return restartNode($node);
     }

@@ -19,7 +19,7 @@
 
 # Helper script for several API requests that need root access
 
-if (echo "$2" | /bin/grep -q -v '^[[:alnum:]_.-]\+$') 2>/dev/null; then
+if (echo "X$2" | /bin/grep -q -v '^X[[:alnum:]_.-]\+$') 2>/dev/null; then
     echo "Invalid node name" >&2
     exit 1
 fi
@@ -37,7 +37,20 @@ case "X$1" in
 	dir="/etc/$conf"
 	if [ -d "$dir" ]; then
 	    cd "$dir"
-	    /usr/bin/tar -czf - *.conf *.json *.xml *.php *.crt --ignore-failed-read 2>/dev/null
+	    if [ -n "$3" ]; then
+		if (echo "X$3" | /bin/grep -q -v '^X[[:alnum:]][[:alnum:]_.-]\+$') 2>/dev/null; then
+		    echo "Invalid file name" >&2
+		    exit 1
+		fi
+		if [ -f "$3" ]; then
+		    cat "$3"
+		else
+		    echo "Not a file: $dir/$3" >&2
+		    exit 2
+		fi
+	    else
+		/usr/bin/tar -czf - *.conf *.json *.xml *.inc *.php *.js *.sh *.crt --ignore-failed-read 2>/dev/null
+	    fi
 	else
 	    echo "Not a directory: $dir" >&2
 	    exit 20
