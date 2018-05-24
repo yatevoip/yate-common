@@ -330,15 +330,15 @@ function getNodeLogs($node,$params)
     );
 }
 
-function restartNode($node)
+function restartNode($node,$oper = "restart")
 {
     if (!preg_match('/^([[:alnum:]_-]+)$/',$node))
 	return buildError(401,"Illegal node type");
 
-    $out = shell_exec("sudo /var/www/html/api_asroot.sh node_restart $node");
+    $out = shell_exec("sudo /var/www/html/api_asroot.sh node_$oper $node");
     if ($out === null)
-	return buildError(501,"Could not restart node $node");
-    return buildSuccess("restarted",$node);
+	return buildError(501,"Could not $oper node $node");
+    return buildSuccess("${oper}ed",$node);
 }
 
 function serviceState($node,$quiet = false)
@@ -392,6 +392,8 @@ function processRequest($json,$recv)
 	    return getNodeConfig($node,getParam(getParam($json,"params"),"file"));
 	case "node_restart":
 	    return restartNode($node);
+	case "node_reload":
+	    return restartNode($node,"reload");
     }
     if (paramMissing($node)) {
 	if (!loadNodes())

@@ -65,12 +65,13 @@ case "X$1" in
 	    exit 2
 	fi
 	;;
-    Xnode_restart)
+    Xnode_restart|Xnode_reload)
+	cmd="${1#*_}"
 	if [ -f "/usr/lib/systemd/system/$serv.service" ]; then
-	    /usr/bin/systemctl restart "$serv.service" >&2 && echo "OK"
+	    /usr/bin/systemctl "$cmd" "$serv.service" >&2 && echo "OK"
 	else
 	    if [ -x "/etc/rc.d/init.d/$serv" ]; then
-		/sbin/service "$serv" restart >&2 && echo "OK"
+		/sbin/service "$serv" "$cmd" >&2 && echo "OK"
 	    else
 		echo "Neither systemd nor Sys V init control file found for $serv" >&2
 		exit 1
