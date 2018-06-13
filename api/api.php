@@ -408,7 +408,7 @@ function processRequest($json,$recv)
 	    break;
     }
     if ((null === $res) && ("yate" == $node) && ("get_node_status" == $req))
-	$res = array("status" => array("level" => "MILD", "state" => "Unknown"));
+	$res = array("code" => 0, "status" => array("level" => "INFO", "state" => "Unknown"));
     if ($res !== null) {
 	if ("get_node_status" == $req) {
 	    $serv = serviceState($node,isOperational($res));
