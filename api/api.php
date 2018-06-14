@@ -297,8 +297,12 @@ function getNodeLogs($node,$params)
 	case "MILD":
 	    $level = '/^([^<]+ )?<([^ ]+:)?(MILD|WARN|STUB|CONF|CRIT|GOON|TEST|FAIL)>/';
 	    break;
-	default:
+	case "5":
+	case "WARN":
 	    $level = '/^([^<]+ )?<([^ ]+:)?(WARN|STUB|CONF|CRIT|GOON|TEST|FAIL)>/';
+	    break;
+	default:
+	    $level = '/[[:print:]]/';
     }
     $lines = getParam($params,"lines",50);
     if ($lines < 10)
