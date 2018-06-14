@@ -240,10 +240,12 @@ function getNodeConfig($node,$file)
 	return buildError(401,"Illegal file name");
     $conf = ("yate" == $node) ? "yate" : "yate/$node";
     $dir = "/etc/$conf";
-    if (!is_dir($dir))
-	return buildError(404,"Directory not found: $dir");
-    if (("" != $file) && !is_file("$dir/$file"))
-	return buildError(404,"File not found: $dir/$file");
+    if (!is_file("/usr/share/yate/api/${node}_asroot.sh")) {
+	if (!is_dir($dir))
+	    return buildError(404,"Directory not found: $dir");
+	if (("" != $file) && !is_file("$dir/$file"))
+	    return buildError(404,"File not found: $dir/$file");
+    }
 
     if ("" != $file)
 	$file = " $file";
@@ -265,7 +267,7 @@ function getNodeLogs($node,$params)
 	return buildError(401,"Illegal node type: $node");
     $serv = ("yate" == $node) ? "yate" : "yate-$node";
     $log = "/var/log/$serv";
-    if (!is_file($log))
+    if (!(is_file($log) || is_file("/usr/share/yate/api/${node}_asroot.sh")))
 	return buildError(404,"Log file not found: $log");
 
     $out = array();

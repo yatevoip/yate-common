@@ -32,6 +32,11 @@ else
     serv="yate-$2"
 fi
 
+ext="/usr/share/yate/api/${2}_asroot.sh"
+if [ -s "$ext" -a -O "$ext" ]; then
+    . "$ext"
+fi
+
 case "X$1" in
     Xget_node_config)
 	dir="/etc/$conf"
