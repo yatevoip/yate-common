@@ -64,7 +64,7 @@ case "X$1" in
     Xget_node_logs)
 	log="/var/log/$serv"
 	if [ -f "$log" ]; then
-	    /usr/bin/tail -c 500000 "$log"
+	    /usr/bin/tail -c 550000 "$log" | /usr/bin/tail -n +2
 	else
 	    echo "Not a file: $log" >&2
 	    exit 2

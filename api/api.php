@@ -307,17 +307,12 @@ function getNodeLogs($node,$params)
     $lines = getParam($params,"lines",50);
     if ($lines < 10)
 	$lines = 10;
-    else if ($lines > 1000)
-	$lines = 1000;
-    $first = true;
+    else if ($lines > 10000)
+	$lines = 10000;
     for (;;) {
 	$line = fgets($fh,4096);
 	if ($line === false)
 	    break;
-	if ($first) {
-	    $first = false;
-	    continue;
-	}
 	if (preg_match('/^Supervisor \([0-9]+\) is starting/',$line))
 	    $out = array();
 	if (!preg_match($level,$line))
@@ -529,6 +524,13 @@ function checkRequest($method = "POST")
 		}
 		if (null !== $vars) {
 		    $inp = array();
+		    if (isset($_SERVER["PATH_INFO"])) {
+			if (preg_match('/^\/([a-z][[:alnum:]_]*)(\/[[:alnum:]_-]*)?$/',$_SERVER["PATH_INFO"],$match)) {
+			    $inp["request"] = $match[1];
+			    if (isset($match[2]) && (strlen($match[2]) > 1))
+				$inp["node"] = substr($match[2],1);
+			}
+		    }
 		    foreach ($vars as $k => $v) {
 			switch ($k) {
 			    case "request":
