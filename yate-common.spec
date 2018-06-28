@@ -96,7 +96,7 @@ if grep -q '^ *; *date\.timezone *=' %{_sysconfdir}/php.ini 2>/dev/null; then
 fi
 
 if [ "X$1" = "X1" ]; then
-%{_datadir}/yate/scripts/rpm_restore.sh %{name}
+    %{_datadir}/yate/scripts/rpm_restore.sh %{name}
 %if "%{systemd}" != "0"
     /usr/bin/systemctl enable httpd.service
     /usr/bin/systemctl restart httpd.service
