@@ -162,6 +162,10 @@ function toMSISDN(num,cc,ton,skipCC)
 	return null;
     switch (ton) {
 	case 0x11:
+	case 0x50: // alphanumeric, npi unknown
+	case 0x51: // alphanumeric, npi isdn
+	case 0x58: // alphanumeric, npi national
+	case "alphanumeric":
 	case "international":
 	    return num;
 	case 0x21:
