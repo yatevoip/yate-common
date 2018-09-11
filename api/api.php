@@ -275,7 +275,7 @@ function getNodeLogs($node,$params)
     if ($fh === false)
 	return buildError(501,"Cannot retrieve logs from: $log");
 
-    $level = getParam($params,"level");
+    $level = getParam($params,"level",getParam($params,'$1'));
     switch (strtoupper("$level")) {
 	case "10":
 	case "ALL":
@@ -363,16 +363,21 @@ function processRequest($json,$recv)
     $req = getParam($json,"request");
     if (paramMissing($req))
 	return buildError(402,"Missing 'request' parameter.");
+    if (preg_match('/^echo[:_][A-Za-z]/',$req)) {
+	$json["request"] = substr($req,5);
+	return $json;
+    }
     $node = getParam($json,"node");
     if ((null !== $node) && ("" != $node) && !preg_match('/^[[:alnum:]_-]+$/',$node))
 	return buildError(401,"Illegal 'node' parameter.");
+    $params = getParam($json,"params");
     switch ($req) {
 	case "get_api_version":
 	    return buildSuccess("api_version",$api_version);
 	case "get_oem_serial":
 	    return getOemSerial();
 	case "get_net_address":
-	    return getNetAddress(getParam(getParam($json,"params"),"filtered",true));
+	    return getNetAddress(getParam($params,"filtered",true));
 	case "get_node_type":
 	    if (!loadNodes())
 		return buildError(201,"No node plugin is installed.");
@@ -388,9 +393,9 @@ function processRequest($json,$recv)
 	    }
 	    return buildSuccess("node_type",$list);
 	case "get_node_logs":
-	    return getNodeLogs($node,getParam($json,"params"));
+	    return getNodeLogs($node,$params);
 	case "get_node_config":
-	    return getNodeConfig($node,getParam(getParam($json,"params"),"file"));
+	    return getNodeConfig($node,getParam($params,"file",getParam($params,'$1')));
 	case "node_restart":
 	    return restartNode($node);
 	case "node_reload":
@@ -524,16 +529,35 @@ function checkRequest($method = "POST")
 		}
 		if (null !== $vars) {
 		    $inp = array();
+		    $pre = "";
 		    if (isset($_SERVER["PATH_INFO"])) {
-			if (preg_match('/^\/([a-z][[:alnum:]_]*)(\/[[:alnum:]_-]*)?$/',$_SERVER["PATH_INFO"],$match)) {
-			    $inp["request"] = $match[1];
+			$v = $_SERVER["PATH_INFO"];
+			if (preg_match('/^\/echo(\/.*)?$/',$v)) {
+			    $pre = "echo:";
+			    $v = substr($v,5);
+			}
+			if (preg_match('/^\/([a-z][[:alnum:]_]*)(\/[[:alnum:]_-]*)?(\/.*)?$/',$v,$match)) {
+			    $inp["request"] = $pre . $match[1];
 			    if (isset($match[2]) && (strlen($match[2]) > 1))
 				$inp["node"] = substr($match[2],1);
+			    if (isset($match[3]) && (strlen($match[3]) > 1)) {
+				$v = substr($match[3],1);
+				while ("/" == substr($v,-1))
+				    $v = substr($v,0,-1);
+				$v = explode('/',$v);
+				for ($k = 0; $k < count($v); $k++) {
+				    if (!$k)
+					$inp["params"] = array();
+				    $inp["params"]['$' . ($k + 1)] = $v[$k];
+				}
+			    }
 			}
 		    }
 		    foreach ($vars as $k => $v) {
 			switch ($k) {
 			    case "request":
+				$v = $pre . $v;
+				// fall through
 			    case "node":
 				$inp[$k] = $v;
 				break;
