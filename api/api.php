@@ -95,9 +95,10 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
 	$msg->SetParam("received",$recv);
     if ($params) {
 	$json = json_encode($params);
-	$jlen = strlen($json);
-	if ($jlen > 7942)
-	    Yate::SetLocal("bufsize",250 + $jlen);
+	// take into account an average expansion due to escaping
+	$jlen = ceil(1.06 * strlen($json));
+	if ($jlen > 7922)
+	    Yate::SetLocal("bufsize",270 + $jlen);
 	$msg->SetParam("json",$json);
     }
     $msg->Dispatch();
