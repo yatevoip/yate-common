@@ -44,29 +44,47 @@ function sqlQuery(query,account,async)
 }
 
 // Make a SQL query, return 1st column in 1st row, null if query failed or returned no records
-function valQuery(query,async,account)
+// Return undefined if dbFail is set and database query succeeds with empty result
+function valQuery(query,async,account,dbFail)
 {
     var res = sqlQuery(query,account,async);
     if (!res)
 	return null;
+    if (dbFail) {
+	if (res = res.getResult(0,0))
+	    return res;
+	return undefined;
+    }
     return res.getResult(0,0);
 }
 
 // Make a SQL query, return 1st row as Object, null if query failed or returned no records
-function rowQuery(query,async,account)
+// Return undefined if dbFail is set and database query succeeds with empty result
+function rowQuery(query,async,account,dbFail)
 {
     var res = sqlQuery(query,account,async);
     if (!res)
 	return null;
+    if (dbFail) {
+	if (res = res.getRow(0))
+	    return res;
+	return undefined;
+    }
     return res.getRow(0);
 }
 
 // Make a SQL query, return 1st column as Array, null if query failed or returned no records
-function colQuery(query,async,account)
+// Return undefined if dbFail is set and database query succeeds with empty result
+function colQuery(query,async,account,dbFail)
 {
     var res = sqlQuery(query,account,async);
     if (!res)
 	return null;
+    if (dbFail) {
+	if (res = res.getColumn(0))
+	    return res;
+	return undefined;
+    }
     return res.getColumn(0);
 }
 
