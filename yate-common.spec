@@ -88,7 +88,10 @@ mkdir -p /var/log/json_api
 chown -R apache.apache /var/log/json_api
 
 if grep -q '^ *; *date\.timezone *=' %{_sysconfdir}/php.ini 2>/dev/null; then
-    tz=`sed -n 's/^ *ZONE *= *//p' %{_sysconfdir}/sysconfig/clock`
+    tz=`sed -n 's/^ *ZONE *= *//p' %{_sysconfdir}/sysconfig/clock 2>/dev/null`
+    if [ -z "$tz" ]; then
+	tz=`LANG=C LC_MESSAGES=C timedatectl 2>/dev/null | sed -n 's/.*Time zone: *\([^ ]\+\).*$/\1/p'`
+    fi
     if [ -n "$tz" ]; then
 	sed -i 's,^ *; *date\.timezone *=.*$,'"date.timezone = $tz," %{_sysconfdir}/php.ini
 	echo "Patched %{_sysconfdir}/php.ini for timezone $tz"
