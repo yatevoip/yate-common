@@ -54,7 +54,7 @@ case "X$1" in
 		    exit 2
 		fi
 	    else
-		/usr/bin/tar -czf - *.conf *.json *.xml *.inc *.php *.js *.sh *.crt *.rpmsave --ignore-failed-read 2>/dev/null
+		/usr/bin/tar -czf - *.conf *.json *.xml *.inc *.php *.js *.sh *.crt *.rpmsave *.csv --ignore-failed-read 2>/dev/null
 	    fi
 	else
 	    echo "Not a directory: $dir" >&2
