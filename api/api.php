@@ -139,7 +139,7 @@ function addHandler($handler, $name = null)
 	}
 	else
 	    $req_handlers[] = $handler;
-	return true;
+	return $res;
     }
     return false;
 }
@@ -200,7 +200,13 @@ function loadNodes($prefix = null)
     while (false !== ($file = readdir($handle))) {
 	if (substr($file,-4) != '.php')
 	    continue;
-	if ((null !== $prefix) && ("" != $prefix) && (substr(substr($file,0,-4),0,strlen($prefix)) != $prefix))
+	$name = substr($file,0,-4);
+	if ((null !== $prefix) && ("" != $prefix)) {
+	    if (substr($name,0,strlen($prefix)) != $prefix)
+		continue;
+	    $name = substr($name,strlen($prefix));
+	}
+	if (!preg_match('/^([[:alnum:]_-]+)$/',$name))
 	    continue;
 	$file = "${component_dir}/${file}";
 	if (!is_file($file))
