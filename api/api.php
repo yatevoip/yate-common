@@ -151,7 +151,12 @@ function getParam($array,$name,$def = null)
 
 function paramMissing($param)
 {
-    return ($param === null) || ($param == "");
+    return ($param === null) || ("$param" == "");
+}
+
+function paramPresent($param)
+{
+    return ($param !== null) && ("$param" != "");
 }
 
 function buildSuccess($name = "",$value = null)
