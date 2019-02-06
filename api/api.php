@@ -117,8 +117,12 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
 	    }
 	    if (!$ev->handled)
 		return buildError(200,"Request '$request' not handled by Yate.");
-	    if ($ev->retval == "-")
-		return buildError($ev->GetValue("error",400),$ev->GetValue("reason"));
+	    if ($ev->retval == "-") {
+		$err = $ev->GetValue("error",400);
+		if (is_int(1 * $err))
+		    $err = 1 * $err;
+		return buildError($err,$ev->GetValue("reason"));
+	    }
 	    return buildSuccess($ev->retval,json_decode($ev->GetValue("json"),true));
 	}
     }
