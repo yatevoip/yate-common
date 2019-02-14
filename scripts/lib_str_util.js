@@ -356,4 +356,39 @@ function setPaging(msg,length,header)
 	msg.cmd_offset += winLen;
 }
 
+// Copy object properties
+// list: Optional comma separated list of properties to copy
+// prefix: Optional prefix used to match properties (applied before cheking in list)
+// skipPrefix: Optional boolean indicating if prefix should be skipped (undefined/null -> true)
+function copyObjProps(dest,src,list,prefix,skipPrefix)
+{
+    var a = null;
+    if (list) {
+	a = list.split(",");
+	if (!a)
+	    return;
+    }
+    for (var p in src) {
+	if (prefix) {
+	    if (!p.startsWith(prefix))
+		continue;
+	    if (false !== skipPrefix) {
+		var pDest = p.substr(prefix.length);
+		if (pDest) {
+		    if (!a)
+			dest[pDest] = src[p];
+		    else if (a.includes(p))
+			dest[pDest] = src[p];
+		}
+		continue;
+	    }
+	}
+	if (!a)
+	    dest[p] = src[p];
+	else if (a.includes(p))
+	    dest[p] = src[p];
+    }
+}
+
+
 /* vi: set ts=8 sw=4 sts=4 noet: */
