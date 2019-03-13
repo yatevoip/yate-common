@@ -55,6 +55,15 @@ while read -r REPLY; do
 	    url="${params#*:url=}"; url="${url%%:*}"
 	    # unescape just the % and : characters
 	    url=`echo "$url" | sed 's/%z/:/g; s/%%/%/g'`
+	    dbg="${params#*:debug=}"; dbg="${dbg%%:*}"
+	    case "X$dbg" in
+		Xtrue|Xyes|Xon|Xenable|X1)
+		    dbg="-S"
+		    ;;
+		*)
+		    dbg="-q"
+		    ;;
+	    esac
 	    tmp="${params#*:timeout=}"; tmp="${tmp%%:*}"
 	    tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; s/ //g'`
 	    if [ "$tmp" -ge "100" 2>/dev/null ]; then
@@ -76,6 +85,9 @@ while read -r REPLY; do
 		tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; s/ //g'`
 		test -n "$tmp" && opt[$((len++))]="--header=Content-Type:$tmp"
 	    fi
+	    tmp="${params#*:header=}"; tmp="${tmp%%:*}"
+	    tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; s/ //g'`
+	    test -n "$tmp" && opt[$((len++))]="--header=$tmp"
 	    tmp="${params#*:agent=}"; tmp="${tmp%%:*}"
 	    if [ -n "$tmp" ]; then
 		tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; s/^ \+//; s/ \+$//'`
@@ -89,11 +101,11 @@ while read -r REPLY; do
 		    case "X$multi" in
 			Xtrue|Xyes|Xon|Xenable|X1)
 			    # return all lines of response escaped as a single string
-			    resp=`(wget -q -O - "${opt[@]}" "${url}" || echo "$mark$?_") </dev/null | sed 's/%/%%/g; s/:/%z/g; s/\t/%I/g; s/\r/%M/g; {:n;N;s/\n/%J/g;t n}; s/[[:cntrl:]]//g'`
+			    resp=`(wget $dbg -O - "${opt[@]}" "${url}" || echo "$mark$?_") </dev/null | sed 's/%/%%/g; s/:/%z/g; s/\t/%I/g; s/\r/%M/g; {:n;N;s/\n/%J/g;t n}; s/[[:cntrl:]]//g'`
 			    ;;
 			*)
 			    # keep only first line of response and escape it
-			    resp=`(wget -q -O - "${opt[@]}" "${url}" || echo "$mark$?_") </dev/null | head -1 | sed 's/[[:cntrl:]]//g; s/%/%%/g; s/:/%z/g'`
+			    resp=`(wget $dbg -O - "${opt[@]}" "${url}" || echo "$mark$?_") </dev/null | head -1 | sed 's/[[:cntrl:]]//g; s/%/%%/g; s/:/%z/g'`
 			    ;;
 		    esac
 		    case "X$resp" in
@@ -108,7 +120,7 @@ while read -r REPLY; do
 		    ;;
 		*)
 		    # execute asynchronously, don't care if succeeds or fails
-		    wget -q -O - "${opt[@]}" "${url}" </dev/null >/dev/null &
+		    wget $dbg -O - "${opt[@]}" "${url}" </dev/null >/dev/null &
 		    ;;
 	    esac
 	    if [ -n "$resp" ]; then
