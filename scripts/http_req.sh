@@ -60,6 +60,9 @@ while read -r REPLY; do
 		Xtrue|Xyes|Xon|Xenable|X1)
 		    dbg="-S"
 		    ;;
+		Xfull|Xdebug)
+		    dbg="-d"
+		    ;;
 		*)
 		    dbg="-q"
 		    ;;
