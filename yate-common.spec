@@ -76,6 +76,7 @@ based products.
 %dir %{_datadir}/yate/api
 %{_datadir}/yate/scripts/*
 /var/www/html/api.php
+/var/www/html/api_library.php
 /var/www/html/api_network.php
 /var/www/html/api_version.php
 /var/www/html/api_logs.php
