@@ -390,5 +390,62 @@ function copyObjProps(dest,src,list,prefix,skipPrefix)
     }
 }
 
+// Helper function to copy some non-null parameters from one object to another
+// Prefixes in front of the name:
+//  ! indicates boolean conversion
+//  # indicates numeric conversion
+//  % indicates hexadecimal number
+//  & indicates splitting to an array
+function copyNonNull(dest,src,list,prefix)
+{
+    var c = 0;
+    for (var i = 0; i < list.length; i++) {
+	var n = list[i];
+	var t = n.substr(0,1);
+	switch (t) {
+	    case "!":
+	    case "#":
+	    case "%":
+	    case "&":
+		n = n.substr(1);
+		break;
+	    default:
+		t = "";
+	}
+	var v = src[prefix + n];
+	if (isPresent(v)) {
+	    c++;
+	    switch (t) {
+		case "!":
+		    dest[n] = !!v;
+		    break;
+		case "#":
+		    dest[n] = 1*v;
+		    break;
+		case "%":
+		    v = 1*v;
+		    dest[n] = "0x" + v.toString(16);
+		    break;
+		case "&":
+		    v = v.trim();
+		    if ("" == v) {
+			c--;
+			continue;
+		    }
+		    v = v.split(",");
+		    for (var j = 0; j < v.length; j++) {
+			var s = v[j];
+			v[j] = s.trim();
+		    }
+		    dest[n] = v;
+		    break;
+		default:
+		    dest[n] = "" + v;
+	    }
+	}
+    }
+    return c;
+}
+
 
 /* vi: set ts=8 sw=4 sts=4 noet: */
