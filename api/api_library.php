@@ -346,7 +346,7 @@ function checkRequest($method = "POST")
 		    $recv["addr"] = $serv;
 		$recv["prot"] = isset($_SERVER['HTTPS']) ? "HTTPS" : "HTTP";
 	    }
-	    $out = processRequest($inp,$recv);
+	    $out = processRequest($inp,$recv,$json_in);
 	    if (isset($out["_type"])) {
 		header("Content-type: " . $out["_type"]);
 		if (isset($out["_file"]))
