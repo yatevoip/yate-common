@@ -183,4 +183,94 @@ function mergeStats(stats,module,details)
     }
 }
 
+// Full implementation of the "get_loggers" request handler
+function apiGetLoggers()
+{
+    var m = new Message("engine.command");
+    m.partial = "debug ";
+    m.partline = "debug";
+    m.dispatch(true);
+    m = m.retValue();
+    while ('\t' == m.charAt(0))
+	m = m.substr(1);
+    m = m.split('\t');
+    m.sort();
+    return { name:"loggers", object:m };
+}
+
+// Full implementation of the "get_logging" request handler
+function apiGetLogging(params)
+{
+    if (isEmpty(params.module))
+	return { error:402, reason:"Missing or empty parameter 'module'." };
+    var m = new Message("engine.debug");
+    m.module = params.module;
+    if (!m.dispatch(true)) {
+	m = "Unknown logger '" + params.module + "'.";
+	return { error:404, reason:m };
+    }
+    m = m.retValue();
+    m = m.trim();
+    return { name:"logging", object:m };
+}
+
+// Full implementation of the "set_logging" request handler
+function apiSetLogging(params)
+{
+    if (isEmpty(params.module))
+	return { error:402, reason:"Missing or empty parameter 'module'." };
+    var lvl = params.level;
+    switch (lvl) {
+	case false:
+	    break;
+	case 0:
+	case 1:
+	case 2:
+	    lvl = undefined;
+	    break;
+	case "CONF":
+	case "conf":
+	    lvl = 3;
+	    break;
+	case "STUB":
+	case "stub":
+	    lvl = 4;
+	    break;
+	case "WARN":
+	case "warn":
+	    lvl = 5;
+	    break;
+	case "MILD":
+	case "mild":
+	    lvl = 6;
+	    break;
+	case "NOTE":
+	case "note":
+	    lvl = 7;
+	    break;
+	case "CALL":
+	case "call":
+	    lvl = 8;
+	    break;
+	case "INFO":
+	case "info":
+	    lvl = 9;
+	    break;
+	case "ALL":
+	case "all":
+	    lvl = 10;
+	    break;
+    }
+    if (isNaN(lvl) || (lvl < 0) || (lvl > 10))
+	return { error:401, reason:"Missing or invalid parameter 'level' value." };
+    var m = new Message("engine.debug");
+    m.module = params.module;
+    m.line = "level " + lvl;
+    if (!m.dispatch(true)) {
+	m = "Unknown logger '" + params.module + "'.";
+	return { error:404, reason:m };
+    }
+    return apiGetLogging(params);
+}
+
 /* vi: set ts=8 sw=4 sts=4 noet: */
