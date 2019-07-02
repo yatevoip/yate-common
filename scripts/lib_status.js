@@ -201,8 +201,19 @@ function apiGetLoggers()
 // Full implementation of the "get_logging" request handler
 function apiGetLogging(params)
 {
-    if (isEmpty(params.module))
-	return { error:402, reason:"Missing or empty parameter 'module'." };
+    if (isEmpty(params.module)) {
+	if (!Array.isArray(params.modules))
+	    return { error:402, reason:"Missing or empty parameter 'module'." };
+	var res = { modules:{ }, failed:0 };
+	for (var m of params.modules) {
+	    var l = apiGetLogging({ module:m });
+	    if (isFilled(l.object))
+		res.modules[m] = l.object;
+	    else
+		res.failed++;
+	}
+	return { name:"logging", object:res };
+    }
     var m = new Message("engine.debug");
     m.module = params.module;
     if (!m.dispatch(true)) {
@@ -217,8 +228,20 @@ function apiGetLogging(params)
 // Full implementation of the "set_logging" request handler
 function apiSetLogging(params)
 {
-    if (isEmpty(params.module))
-	return { error:402, reason:"Missing or empty parameter 'module'." };
+    if (isEmpty(params.module)) {
+	if ("object" != typeof params.modules)
+	    return { error:402, reason:"Missing or empty parameter 'module'." };
+	var res = { modules:{ }, failed:0 };
+	for (var m in params.modules) {
+	    var l = params.modules[m];
+	    l = apiSetLogging({ module:m, level:l });
+	    if (isFilled(l.object))
+		res.modules[m] = l.object;
+	    else
+		res.failed++;
+	}
+	return { name:"logging", object:res };
+    }
     var lvl = params.level;
     switch (lvl) {
 	case false:
