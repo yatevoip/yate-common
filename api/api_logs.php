@@ -6,7 +6,7 @@
  * JSON API logs reader
  *
  * Yet Another Telephony Engine - a fully featured software PBX and IVR
- * Copyright (C) 2014-2016 Null Team
+ * Copyright (C) 2014-2019 Null Team
  *
  * This software is distributed under multiple licenses;
  * see the COPYING file in the main directory for licensing
@@ -20,11 +20,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+@include_once("api_config.php");
+
+session_start();
+
 if (getparam("method")=="logout") {
 	session_unset();
 }
 
-$logs_file = "/var/log/json_api/requests_log.txt";
+$logs_file = "/var/log/json_api/*_log*.txt";
 
 $self = $_SERVER["PHP_SELF"];
 $self = explode("/",$self);
@@ -49,25 +53,19 @@ function page()
 	unset($path[count($path)-1]);
 	$path = implode("/",$path);
 
-	$file_name = str_replace(".txt",'',$file_name);
-
 	$names = array();
-	if ($handle = opendir($path))
+	if ($handle = @opendir($path))
 	{
 		while (false !== ($file = readdir($handle)))
 		{
-			if (substr($file,0,strlen($file_name))==$file_name) {
+			if (fnmatch($file_name,$file))
 				$names[] = $file;
-			}
 		}
 		closedir($handle);
 	}
-	$today_file = str_replace(".txt", date("Y-m-d").".txt", $file_name);
 
-	if (!in_array($today_file, $names)) {
-		array_multisort($names, SORT_ASC);
-		$today_file = $names[count($names)-1];
-	}
+	array_multisort($names, SORT_ASC);
+	$today_file = (count($names) > 0) ? $names[count($names)-1] : "";
 
 	$names["selected"] = (getparam("file")) ? getparam("file") : $today_file;
 	$add = array("file"=>array($names, "display"=>"select"), "node_type"=>array("value"=>$node, "display"=>"hidden"));
@@ -131,7 +129,7 @@ function page_database()
 	}
 	$file = "$path/$file";
 
-	$fh = fopen($file,"r");
+	$fh = @fopen($file,"r");
 	if (!$fh)
 		exit("Could not open logs file $file");
 
