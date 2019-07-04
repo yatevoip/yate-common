@@ -70,6 +70,34 @@ case "X$1" in
 	    exit 2
 	fi
 	;;
+    Xget_node_cdrs)
+	conf="/etc/$conf/cdrfile.conf"
+	cfg=`/usr/bin/sed ':a;/\\\\$/{N;s/\\\\\\n//;ba}' "$conf"`
+	cdr=`echo "$cfg" | /usr/bin/sed -n 's/^ *file *= *\(.*\.tsv\)/\1/p'`
+	if [ -z "$cdr" -o "X"`echo "$cdr" | /usr/bin/wc -l` != "X1" ]; then
+	    echo "Cannot locate CDR file in $conf" >&2
+	    exit 1
+	fi
+	fmt=`echo "$cfg" | /usr/bin/sed -n 's/$[^{}]\+}/}/g; s/}${/}${|/g; s/${\([^}]\+\)}/\1/g; s/^ *format *= *\(.*\)/\1/p'`
+	if [ -z "$fmt" -o "X"`echo "$fmt" | /usr/bin/wc -l` != "X1" ]; then
+	    echo "Cannot identify CDR format in $conf" >&2
+	    exit 1
+	fi
+	if [ ! -r "$cdr" ]; then
+	    echo "Missing or inaccessible: $cdr" >&2
+	    exit 2
+	fi
+	lines=`echo "X$3" | /usr/bin/sed -n 's/^X\([1-9][0-9]*\)$/\1/p'`
+	if [ -z "$lines" ]; then
+	    lines=50
+	else
+	    if [ 0 -ge "$lines" -o 10000 -lt "$lines" ]; then
+		lines=50
+	    fi
+	fi
+	echo "$fmt"
+	/usr/bin/tail -n "$lines" "$cdr"
+	;;
     Xnode_restart|Xnode_reload)
 	cmd="${1#*_}"
 	if [ -f "/usr/lib/systemd/system/$serv.service" ]; then

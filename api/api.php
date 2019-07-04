@@ -216,6 +216,26 @@ function getNodeLogs($node,$params)
     );
 }
 
+function getNodeCDRs($node,$params)
+{
+    if (!preg_match('/^([[:alnum:]_-]+)$/',$node))
+	return buildError(401,"Illegal node type");
+    $conf = ("yate" == $node) ? "yate" : "yate-$node";
+    $lines = getParam($params,"lines",50);
+    if ($lines < 10)
+	$lines = 10;
+    else if ($lines > 10000)
+	$lines = 10000;
+    $out = shell_exec("sudo /var/www/html/api_asroot.sh get_node_cdrs $node $lines");
+    if ($out === null)
+	return buildError(501,"Cannot get CDRs for $conf");
+    return array(
+	"_type" => "text/tab-separated-values",
+	"_file" => "$conf-cdr.tsv",
+	"_body" => $out
+    );
+}
+
 function restartNode($node,$oper = "restart")
 {
     if (!preg_match('/^([[:alnum:]_-]+)$/',$node))
@@ -279,6 +299,8 @@ function processRequest($json,$recv)
 	    return buildSuccess("node_type",$list);
 	case "get_node_logs":
 	    return getNodeLogs($node,$params);
+	case "get_node_cdrs":
+	    return getNodeCDRs($node,$params);
 	case "get_node_config":
 	    return getNodeConfig($node,getParam($params,"file",getParam($params,'$1')));
 	case "node_restart":
