@@ -85,12 +85,12 @@ function isParamMissing(error,param,value,section_name)
 {
     if (isPresent(value))
 	return false;
-    setMissingParam(error,param,section_name);
+    setMissingParamSection(error,param,section_name);
     return true;
 }
 
 // Set the error object for a missing param 
-function setMissingParam(error,param,section_name)
+function setMissingParamSection(error,param,section_name)
 {
     error.reason = "Missing required '" + param + "' parameter in section '" + section_name + "'.";
     error.error = 402;
