@@ -447,5 +447,70 @@ function copyNonNull(dest,src,list,prefix)
     return c;
 }
 
+// Build date time from timestamp & format
+// dd/mm/yyyy-HH:mm:ss  -  for local format
+// dd/mm/yyyy-HH:mm:ssZ -  for ucn format
+// dd/mm/yyyy-HH:mm:ssGMT+/-N(N) - local_tz format
+function buildDate(timestamp, format)
+{
+    if (!format) {
+	format = "local_tz";
+    }
+
+    var time = timestamp * 1000;
+    time = new Date(time);
+
+    if ("utc"===format) {
+	var tz = time.getTimezoneOffset();
+	timestamp = timestamp * 1000 + tz * 1000 * 60;
+	time = new Date(timestamp);
+    }
+
+    // in case of unknown format, local will be returned
+    var month = time.getMonth() + 1;
+    var date = strFix(time.getDate(),-2,"0") + "/" + strFix(month,-2,"0") + "/" + time.getFullYear() + " " +
+	strFix(time.getHours(),-2,"0") + ":" + strFix(time.getMinutes(),-2,"0") + ":" + strFix(time.getSeconds(),-2,"0");
+
+    switch (format) {
+	case "local_tz":
+	    var tz = time.getTimezoneOffset() / -60;
+	    date += "GMT";
+	    if (tz<0)
+		date += "-";
+	    else if (tz>0)
+		date += "+";
+	    if (tz!=0)
+		date += tz;
+	    break;
+	case "utc":
+	    date += "Z";
+    }
+   
+    return date;
+}
+
+// This method splits a String object into an array of strings by separating the string into substrings.
+// Extends string.split() -  sep can be more than one char
+function strSplit(string,sep)
+{
+    if (sep===undefined || sep.length==0)
+	return [string];
+
+    if (sep.length==1)
+	return string.split(sep);
+
+    var arr = [];
+    while(true) {
+	var pos = string.indexOf(sep);
+	if (pos==-1) {
+	    arr.push(string);
+	    break;
+	}
+	arr.push(string.substr(0,pos));
+	string = string.substr(pos + sep.length);
+    }
+
+    return arr;
+}
 
 /* vi: set ts=8 sw=4 sts=4 noet: */
