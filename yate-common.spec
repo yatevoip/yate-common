@@ -58,6 +58,7 @@ Requires:	php-cli
 Requires:	php-json
 Requires:	php-sockets
 Requires:	php-sysvsem
+%{Recommends}	php-yaml
 %{Recommends}	vlan-utils
 %{Recommends}	netkit-telnet
 %{Suggests}	yate-scripts
@@ -75,6 +76,7 @@ based products.
 %defattr(-,root,root)
 %dir %{_datadir}/yate/api
 %{_datadir}/yate/scripts/*
+%{_datadir}/yate/api/*
 /var/www/html/api.php
 /var/www/html/api_library.php
 /var/www/html/api_network.php
@@ -141,6 +143,7 @@ mkdir -p %{buildroot}/var/www/html
 cp -p %{name}.sudo %{buildroot}%{_sysconfdir}/sudoers.d/%{name}
 cp -p scripts/* %{buildroot}%{_datadir}/yate/scripts/
 cp -p api/* %{buildroot}/var/www/html/
+cp -p doc/*.json %{buildroot}%{_datadir}/yate/api/
 echo '<?php $api_version = "%{version}-%{release}"; ?>' > %{buildroot}/var/www/html/api_version.php
 
 

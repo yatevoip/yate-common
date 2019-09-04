@@ -1,0 +1,448 @@
+[
+    {
+        "name": "get_api_version",
+        "description": "Retrieve the version of the API",
+        "requests": [
+            {
+                "request": "get_api_version"
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "api_version": "Version of the package containing the API, possibly 'unknown'"
+            }
+        ],
+        "examples": [
+            {
+                "request": {
+                    "request": "get_api_version"
+                },
+                "response": {
+                    "code": 0,
+                    "api_version": "1.7-1_r117.mga4"
+                }
+            }
+        ]
+    },
+    {
+        "name": "get_oem_serial",
+        "description": "Retrieve the OEM serial number of the machine",
+        "requests": [
+            {
+                "request": "get_oem_serial"
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "serial": "OEM serial string"
+            }
+        ],
+        "errors": [
+            {
+                "code": 404,
+                "message": "File not found: \/etc\/sysconfig\/oem"
+            },
+            {
+                "code": 501,
+                "message": "Cannot open for reading: \/etc\/sysconfig\/oem"
+            }
+        ],
+        "examples": [
+            {
+                "request": {
+                    "request": "get_oem_serial"
+                },
+                "response": {
+                    "code": 0,
+                    "serial": "yate-XXXXXXXX"
+                }
+            }
+        ]
+    },
+    {
+        "name": "get_net_address",
+        "description": "Retrieves a list of IP addresses of the machine",
+        "requests": [
+            {
+                "request": "get_net_address",
+                "params": {
+                    "filtered": "Boolean to remove loopback and PGW tunnels (optional, default true)"
+                }
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "net_address": [
+                    {
+                        "interface": "Name of the interface #1",
+                        "ethernet": "Ethernet MAC address, only if applicable",
+                        "vlan": "Numeric VLAN ID, only if applicable",
+                        "mtu": "Numeric Maximum Transfer Unit of the interface",
+                        "ipv4": [
+                            {
+                                "address": "IPv4 address #1",
+                                "netmask": "Mask of subnet #1",
+                                "alias": "Name of this alias, only if applicable"
+                            },
+                            {
+                                "address": "IPv4 address #2",
+                                "netmask": "Mask of subnet #2"
+                            },
+                            "..."
+                        ],
+                        "ipv6": [
+                            {
+                                "address": "IPv6 address #1",
+                                "prefixlen": "Numeric IPv6 network prefix length, usually 64"
+                            },
+                            {
+                                "address": "IPv6 address #2",
+                                "prefixlen": "IPv6 prefix length #2"
+                            },
+                            "..."
+                        ]
+                    }
+                ]
+            }
+        ],
+        "errors": [
+            {
+                "code": 501,
+                "mesage": "Cannot retrieve network interfaces"
+            }
+        ]
+    },
+    {
+        "name": "get_node_type",
+        "description": "Get a list of all installed node types with their versions",
+        "requests": [
+            {
+                "request": "get_node_type"
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "node_type": [
+                    {
+                        "type": "Type of node #1",
+                        "version\"": "Version of node #1 or \"unknown\""
+                    },
+                    {
+                        "type": "Type of node #2",
+                        "version\"": "Version of node #2 or \"unknown\""
+                    },
+                    "..."
+                ]
+            }
+        ],
+        "errors": [
+            {
+                "code": 201,
+                "message": "No node plugin is installed."
+            }
+        ]
+    },
+    {
+        "name": "get_node_status",
+        "description": "Get the operational status of a node",
+        "requests": [
+            {
+                "request": "get_node_status",
+                "node": "Type of node to request status from"
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "operational": "Boolean operational status of the node",
+                "level": "Symbolic reporting level for the current state",
+                "state": "Short description of the node state",
+                "service": "Longer, multiline description of the node service state"
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "Illegal node type"
+            },
+            {
+                "code": 401,
+                "message": "Unsupported node type 'NODE'."
+            }
+        ]
+    },
+    {
+        "name": "get_node_logs",
+        "description": "Retrieve filtered logs of a node since the last start",
+        "requests": [
+            {
+                "request": "get_node_logs",
+                "node": "Type of node to retrieve logs from",
+                "params": {
+                    "level": "Symbolic or numeric maximum level (optional)",
+                    "lines": "Number of lines to retrieve (optional, default 50)"
+                }
+            }
+        ],
+        "responses": [
+            {
+                "HTTP Content-Type": "text\/plain",
+                "HTTP Body": "Filtered log lines of the node"
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "Illegal node type"
+            },
+            {
+                "code": 404,
+                "message": "Log file not found: \/var\/log\/yate-NODE"
+            },
+            {
+                "code": 501,
+                "message": "Cannot retrieve logs from: \/var\/log\/yate-NODE"
+            }
+        ]
+    },
+    {
+        "name": "get_node_config",
+        "description": "Retrieve a configuraion file or an archive of all config files of a node",
+        "requests": [
+            {
+                "request": "get_node_config",
+                "node": "Type of node to retrieve configs from"
+            },
+            {
+                "request": "get_node_config",
+                "node": "Type of node to retrieve configs from",
+                "params": {
+                    "file": "Name of the config file to retrieve"
+                }
+            }
+        ],
+        "responses": [
+            {
+                "HTTP Content-Type": "application\/octet-stream",
+                "HTTP Body": "Requested config file content"
+            },
+            {
+                "HTTP Content-Type": "application\/octet-stream",
+                "HTTP Body": "Archive of type tar.gz of config files in the node config directory"
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "Illegal node type"
+            },
+            {
+                "code": 404,
+                "message": "Directory not found: \/etc\/yate\/NODE"
+            },
+            {
+                "code": 404,
+                "message": "File not found: \/etc\/yate\/NODE\/FILE"
+            },
+            {
+                "code": 501,
+                "message": "Cannot get configuration from: \/etc\/yate\/NODE\/FILE"
+            }
+        ]
+    },
+    {
+        "name": "node_restart",
+        "description": "Completely restart a node service",
+        "requests": [
+            {
+                "request": "node_restart",
+                "node": "Type of node to restart"
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "restarted": "NODE"
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "Illegal node type"
+            },
+            {
+                "code": 501,
+                "message": "Could not restart node NODE"
+            }
+        ]
+    },
+    {
+        "name": "node_reload",
+        "description": "Reload the configuration of a running node",
+        "requests": [
+            {
+                "request": "node_reload",
+                "node": "Type of node to reload"
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "reloaded": "NODE"
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "Illegal node type"
+            },
+            {
+                "code": 501,
+                "message": "Could not reload node NODE"
+            }
+        ]
+    },
+    {
+        "name": "query_stats",
+        "description": "Retrieve statistics from a running node",
+        "requests": [
+            {
+                "request": "query_stats",
+                "node": "Type of node to query"
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "stats": {
+                    "engine": {
+                        "version": "Version of the Yate engine",
+                        "revision": "Numeric code revision",
+                        "other params...": "Each parameter with its value"
+                    },
+                    "uptime": {
+                        "wall": "Number of seconds since the engine started",
+                        "user": "Number of CPU seconds consumed in userspace code",
+                        "kernel": "Number of CPU seconds consumed in kernel code"
+                    },
+                    "other modules ...": {
+                        "param1": "Value of parameter #1",
+                        "param2": "Value of parameter #2",
+                        "other params...": "Each parameter with its value"
+                    }
+                }
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "Illegal node type"
+            },
+            {
+                "code": 200,
+                "message": "Cannot connect to Yate on port 'NNNN'."
+            }
+        ]
+    },
+    {
+        "name": "info",
+        "description": "Retrieve a list of API requests with their description",
+        "requests": [
+            {
+                "request": "info",
+                "node": "Type of node to retrieve APIs from"
+            },
+            {
+                "request": "info"
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "api_version": "Version of the package containing the API",
+                "descriptions": [
+                    {
+                        "name_of_request_1": "Description of request 1"
+                    },
+                    {
+                        "name_of_request_2": "Description of request 2"
+                    },
+                    "..."
+                ]
+            }
+        ],
+        "examples": [
+            {
+                "request": {
+                    "request": "info"
+                },
+                "response": {
+                    "code": 0,
+                    "api_info": {
+                        "api_version": "1.7-1_r117.mga4",
+                        "descriptions": {
+                            "info": "Retrieve a list of API requests with their description",
+                            "get_api_version": "Retrieve the version of the API",
+                            "get_oem_serial": "Retrieve the OEM serial number of the machine"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "name": "info_all",
+        "description": "Retrieve a list of API requests with their detailed description",
+        "requests": [
+            {
+                "request": "info_all",
+                "node": "Type of the node to retrieve the full list of APIs from"
+            },
+            {
+                "request": "info_all"
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "api_info": {
+                    "api_version": "Version of the package containing the API",
+                    "requests": [
+                        "Description of request version 1",
+                        "Description of request version 2",
+                        "..."
+                    ],
+                    "responses": [
+                        "Description of response version 1",
+                        "Description of response version 2",
+                        "..."
+                    ],
+                    "errors": [
+                        "Description of error version 1",
+                        "Description of error version 2",
+                        "..."
+                    ],
+                    "examples": [
+                        "Example #1",
+                        "Example #2",
+                        "..."
+                    ]
+                }
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "No documentation for node type 'NODE'."
+            },
+            {
+                "code": 401,
+                "message": "File format error for node 'NODE'."
+            }
+        ]
+    }
+]

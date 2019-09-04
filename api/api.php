@@ -261,6 +261,50 @@ function isOperational($obj)
 	&& $obj["status"]["operational"];
 }
 
+function getApiInfo($node, $request)
+{
+    global $component_dir, $api_version;
+    if ((null === $node) || ("" == $node))
+	$node = "common";
+    $info = @file_get_contents("$component_dir/$node.json");
+    if ($info)
+	$info = json_decode($info,true);
+    else if (function_exists("yaml_parse_file") && file_exists("$component_dir/$node.yaml"))
+	$info = @yaml_parse_file("$component_dir/$node.yaml");
+    else
+	return buildError(401,"No documentation for node type '$node'.");
+    if (!is_array($info))
+	return buildError(401,"File format error for node '$node'.");
+    if ("all" == $request)
+	return buildSuccess("api_info",array("api_version" => $api_version, "requests" => $info));
+    if (!$request) {
+	$req = array();
+	for ($i = 0; $i < count($info); $i++) {
+	    $r = $info[$i];
+	    if (!(isset($r["name"]) && isset($r["description"])))
+		continue;
+	    $req[$r["name"]] = $r["description"];
+	}
+	return buildSuccess("api_info",array("api_version" => $api_version, "descriptions" => $req));
+    }
+    for ($i = 0; $i < count($info); $i++) {
+	$r = $info[$i];
+	if ($r["name"] == $request)
+	    return buildSuccess("api_info",array("api_version" => $api_version, "request" => $r));
+    }
+    if ("common" != $node) {
+	$info = json_decode(@file_get_contents("$component_dir/common.json"),true);
+	if (is_array($info)) {
+	    for ($i = 0; $i < count($info); $i++) {
+		$r = $info[$i];
+		if ($r["name"] == $request)
+		    return buildSuccess("api_info",array("api_version" => $api_version, "request" => $r));
+	    }
+	}
+    }
+    return buildError(401,"Request '$request' is not handled by $node.");
+}
+
 function processRequest($json,$recv)
 {
     global $req_handlers;
@@ -307,7 +351,11 @@ function processRequest($json,$recv)
 	    return restartNode($node);
 	case "node_reload":
 	    return restartNode($node,"reload");
+	case "info":
+	     return getApiInfo($node,getParam($params,"request_info",getParam($params,"$1")));
     }
+    if (preg_match('/^info[:_][A-Za-z]/',$req))
+	return getApiInfo($node,substr($req,5));
     if (paramMissing($node)) {
 	if (!loadNodes())
 	    return buildError(201,"No node plugin is installed.");

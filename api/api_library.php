@@ -209,15 +209,44 @@ function checkRequest($method = "POST")
     else {
 	$ctype = isset($_SERVER["CONTENT_TYPE"]) ? strtolower($_SERVER["CONTENT_TYPE"]) : "";
 	$ctype = preg_replace('/[[:space:]]*;.*$/',"",$ctype);
+	$yaml = false;
 	switch ($ctype) {
 	    case "application/json":
 	    case "text/x-json":
 		if ("POST" == $_SERVER["REQUEST_METHOD"]) {
-		    $json_in = file_get_contents('php://input');;
+		    $json_in = file_get_contents('php://input');
 		    $inp = json_decode($json_in,true);
 		    if ($inp === null) {
 			$errcode = 415;
 			$errtext = "Unparsable JSON content";
+		    }
+		}
+		else {
+		    $errcode = 405;
+		    $errtext = "Method Not Allowed";
+		}
+		break;
+	    case "application/yaml":
+	    case "application/x-yaml":
+	    case "text/yaml":
+	    case "text/x-yaml":
+	    case "text/vnd.yaml":
+		if ("POST" == $_SERVER["REQUEST_METHOD"]) {
+		    if (function_exists("yaml_parse")) {
+			$yaml = true;
+			$inp = yaml_parse(file_get_contents('php://input'));
+			if (false === $inp) {
+			    $errcode = 415;
+			    $errtext = "Unparsable YAML content";
+			}
+			else if (null === $inp)
+			    $json_in = "{ }";
+			else
+			    $json_in = json_encode($inp);
+		    }
+		    else {
+			$errcode = 415;
+			$errtext = "Unsupported Media Type";
 		    }
 		}
 		else {
@@ -244,6 +273,10 @@ function checkRequest($method = "POST")
 		    $pre = "";
 		    if (isset($_SERVER["PATH_INFO"])) {
 			$v = $_SERVER["PATH_INFO"];
+			if (preg_match('/^\/yaml(\/.*)?$/',$v)) {
+			    $yaml = true;
+			    $v = substr($v,5);
+			}
 			if (preg_match('/^\/echo(\/.*)?$/',$v)) {
 			    $pre = "echo:";
 			    $v = substr($v,5);
@@ -274,18 +307,6 @@ function checkRequest($method = "POST")
 				$inp[$k] = $v;
 				break;
 			    default:
-				$o = &$inp;
-				$p = "params";
-				for (;;) {
-				    if (!(isset($o[$p]) && is_array($o[$p])))
-					$o[$p] = array();
-				    $o = &$o[$p];
-				    $i = strpos($k,"/");
-				    if ($i <= 0)
-					break;
-				    $p = substr($k,0,$i);
-				    $k = substr($k,$i + 1);
-				}
 				switch ($v) {
 				    case "null":
 					$v = null;
@@ -302,6 +323,22 @@ function checkRequest($method = "POST")
 				    default:
 					if (preg_match('/^-?[1-9][0-9]*$/',$v))
 					    $v = 1 * $v;
+				}
+				if ("yaml" == $k) {
+				    $yaml = !!$v;
+				    break;
+				}
+				$o = &$inp;
+				$p = "params";
+				for (;;) {
+				    if (!(isset($o[$p]) && is_array($o[$p])))
+					$o[$p] = array();
+				    $o = &$o[$p];
+				    $i = strpos($k,"/");
+				    if ($i <= 0)
+					break;
+				    $p = substr($k,0,$i);
+				    $k = substr($k,$i + 1);
 				}
 				$o[$k] = $v;
 			}
@@ -353,6 +390,13 @@ function checkRequest($method = "POST")
 		    header("Content-Disposition: attachment; filename=\"" . $out["_file"] . "\"");
 		print $out["_body"];
 		logRequest($serv,$json_in);
+	    }
+	    else if ($yaml && defined('YAML_UTF8_ENCODING')) {
+		header("Content-type: text/x-yaml");
+		$log = $log_status || !(function_exists("isOperational") && isOperational($out));
+		print yaml_emit($out,YAML_UTF8_ENCODING);
+		if ($log)
+		    logRequest($serv,$json_in,($out === null) ? "{ }" : json_encode($out));
 	    }
 	    else {
 		header("Content-type: application/json");
