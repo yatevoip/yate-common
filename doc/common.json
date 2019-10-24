@@ -15,6 +15,7 @@
         ],
         "examples": [
             {
+                "description": "Basic request, successful response",
                 "request": {
                     "request": "get_api_version"
                 },
@@ -51,6 +52,7 @@
         ],
         "examples": [
             {
+                "description": "Basic request, successful response",
                 "request": {
                     "request": "get_oem_serial"
                 },
@@ -377,6 +379,7 @@
         ],
         "examples": [
             {
+                "description": "Retrieve common requests list, response truncated for brevity",
                 "request": {
                     "request": "info"
                 },
