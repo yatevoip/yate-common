@@ -277,6 +277,10 @@ function checkRequest($method = "POST")
 			    $yaml = true;
 			    $v = substr($v,5);
 			}
+			else if (preg_match('/^\/json(\/.*)?$/',$v)) {
+			    $yaml = false;
+			    $v = substr($v,5);
+			}
 			if (preg_match('/^\/echo(\/.*)?$/',$v)) {
 			    $pre = "echo:";
 			    $v = substr($v,5);
