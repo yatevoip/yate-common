@@ -1,5 +1,330 @@
 [
     {
+        "name": "set_ss7_node",
+        "api_type": "config",
+        "description": "This request is used to configure the SS7 settings for various equipment (ex: YateHSS\/HLR,YateSMSC, YateUCN etc.).",
+        "requests": [
+            {
+                "request": "set_ss7_node",
+                "node": "The node for which SS7 settings are configured. Ex: hss",
+                "comment__local": "Information about the local node (the actual equipment that you are configuring). . The information about the local node is organized in 'common' object (common settings for the network, but also equipment specific information).",
+                "local": {
+                    "common": {
+                        "dialect": "ITU\/ANSI",
+                        "netindicator": "national\/reservednational\/international",
+                        "pointcode": "Local pointcode, integer representation, range depends on dialect.",
+                        "gt": "Array of local GT. The first element is the GT we are sending from.",
+                        "hlr": "Optional, HLR number (GT) returned in Update Location.",
+                        "msisdn": "Array of MSISDN prefixes to which the HLR will respond.",
+                        "ip": "Local IP address for signaling protocols. Array or comma separated list.",
+                        "sccp_tt": "Boolean. Optional, use Translation Type in SCCP messages, defaults to false.",
+                        "sccp_pc": "Boolean. Optional, use Point Code in SCCP source address, defaults to false."
+                    }
+                },
+                "comment__linksets": "Configures the linksets and links to the STP",
+                "linksets": [
+                    {
+                        "type": "M2PA\/M3UA",
+                        "comment__type": "For M3UA pointcode is optional. Either pointcode and\/or route must be present",
+                        "pointcode": "Adjacent point code, integer representation, range depends on dialect",
+                        "route": "Optional array of PCs in integer representation to route through this STP. The string 'default' may be used as point code to indicate a default route. E.g. route: [23, 'default']",
+                        "comment__links": "M2PA: list of links. M3UA: 1 entry with connection data",
+                        "links": [
+                            {
+                                "ip": "Remote IP address. Array or comma separated list.",
+                                "port": "Integer: 1-65535. Port on the adjacent node.",
+                                "local_ip": "Array of Optional local IP address (use common if missing).",
+                                "local_port": "Optional. Integer: 1-65535. Local port number. Ignored for M3UA. Otherwise: use remote port as default if missing.",
+                                "dscp": "Optional socket DSCP (string or integer)",
+                                "comment__sctp_params": "Optional SCTP params. All params are optional. All integer params are unsigned. See lksctp.conf for info.",
+                                "sctp_params": {
+                                    "rto_initial": "Initial Retransmission Timeout. Format: NNN. Numeric value, maximum 3 digits.",
+                                    "rto_min": "Minimum Retransmission Timeout. Format: NNN. Numeric value, maximum 3 digits.",
+                                    "rto_max": "Maximum Retransmission Timeout. Format: NNN. Numeric value, maximum 3 digits.",
+                                    "max_retrans": "Maximum number of retransmissions. Format: NNN. Numeric value, maximum 3 digits.",
+                                    "hb_interval": "Heartbeat interval in milliseconds. Defaults to 30000 for Diameter transport.",
+                                    "hb_enabled": "Boolean. Enable Heartbeat. Defaults to true.",
+                                    "sack_delay": "Selective Acknowledgement delay. Between 0 and 500ms. Format: NNN. Numeric value, maximum 3 digits.",
+                                    "sack_freq": "Selective Acknowledgement frequency. Format: NNN. Numeric value, maximum 3 digits."
+                                }
+                            }
+                        ],
+                        "aspid": "M3UA only. Number. Optional ASP identifier (unsigned 32 bit)",
+                        "contexts": "M3UA only. Number. Optional Array of  routing context numbers (unsigned 32 bit)",
+                        "traffic": "M3UA only. String. Optional traffic type. Possible values: unused\/override\/loadshare\/broadcast",
+                        "network_appearance": "M3UA only. Number. Optional network appearance (unsigned 32 bit)"
+                    }
+                ],
+                "comment__gt_route": "Configures the GT routes table",
+                "gt_route": [
+                    {
+                        "pc": "Number. Remote point code (must a configured one if there is no default route)",
+                        "prefix": "Number. List of GT prefixes to route to this PC, can be just [ '*' ]"
+                    }
+                ]
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "ss7_node": null
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "Invalid 'linkset type' value 'Ma2PA'."
+            },
+            {
+                "code": 402,
+                "message": "Missing all parameters.\/ Missing 'linkset type' parameter."
+            },
+            {
+                "code": 501,
+                "message": "Locked config file 'conf_file_name'. \/ Failed to save config file 'conf_file_name'. \/ One or more of the config files is locked."
+            }
+        ],
+        "examples": [
+            {
+                "description": "Configure ss7 settings.",
+                "request": {
+                    "request": "set_ss7_node",
+                    "node": "hss",
+                    "params": {
+                        "local": {
+                            "dialect": "ANSI",
+                            "netindicator": "national",
+                            "sccp_tt": true,
+                            "sccp_pc": false,
+                            "pointcode": 33,
+                            "gt": [
+                                "8810033"
+                            ],
+                            "ip": [
+                                "192.168.50.239"
+                            ]
+                        },
+                        "linksets": [
+                            {
+                                "type": "M2PA",
+                                "pointcode": 433,
+                                "route": [
+                                    "default"
+                                ],
+                                "links": [
+                                    {
+                                        "ip": [
+                                            "192.123.50.123"
+                                        ],
+                                        "port": 3556,
+                                        "local_port": 3565,
+                                        "sctp_params": {
+                                            "rto_initial": 111,
+                                            "rto_min": 100,
+                                            "rto_max": 999,
+                                            "max_retrans": 222,
+                                            "hb_interval": 1,
+                                            "sack_delay": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "gt_route": [
+                            {
+                                "pc": 455,
+                                "prefix": [
+                                    "*"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "code": 0,
+                    "ss7_node": null
+                }
+            }
+        ]
+    },
+    {
+        "name": "set_diam_node",
+        "api_type": "config",
+        "description": "This request is used to configure the diameter settings for various equipment (ex: YateHSS\/HLR, YateUCN etc.).",
+        "requests": [
+            {
+                "request": "set_diam_node",
+                "node": "hss",
+                "comment__local": "Information about the local node (the actual equipment that you are configuring). The information about the local node is organized in 'common' object (settings for the network, but also equipment specific information).",
+                "local": {
+                    "common": {
+                        "relay_route_priority": "Number. Optional default route priority for remote nodes advertising. Relay application. Negative: disable. Defaults to 100."
+                    }
+                },
+                "comment__identities": "Configure local nodes",
+                "identities": [
+                    {
+                        "node": "Node identity (realm(domain_name)\/host(host_name)). Ex: example.com\/hss.example.com",
+                        "role": "String. Optional name of special role of this node",
+                        "default_priority": "Number. Optional priority to use this node if no other matches. Default 0 (disabled).",
+                        "default_realm_priority": "Number. Optional priority to use this node if only realm matches. Default 0 (disabled)."
+                    }
+                ],
+                "comment__listeners": "Configure the listeners",
+                "listeners": [
+                    {
+                        "local_ip": "Array of Local IP to bind to.",
+                        "local_port": "Optional local port number, protocol default port will be used if missing",
+                        "ipv6only": "Boolean. Optional. Accept IPv6 only connections. Ignored if local_ip is IPv4",
+                        "dscp": "Optional socket DSCP (string or integer)",
+                        "sctp_params": {
+                            "rto_initial": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                            "rto_min": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                            "rto_max": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                            "max_retrans": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                            "hb_interval": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                            "hb_enabled": "Boolean",
+                            "sack_delay": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                            "sack_freq": "Number. Unsigned. Optional. See lksctp.conf for info."
+                        },
+                        "comment_accept": "Optional, configure accept rule(s). If present and not empty it will restrict the list of local nodes. Handled by this listener. All identities will be handled by this listener if accept is empty",
+                        "accept": [
+                            {
+                                "node": "Node to accept, must be a configured identity",
+                                "accept_node": "Optional remote node(s) to accept. String: RegExp to match node(s) to accept \/ Array: Only remote nodes matching it will be accepted. If present and not empty only listed remote nodes will be accepted.",
+                                "default_route": "Number. Optional default route priority for accepted connections"
+                            }
+                        ]
+                    }
+                ],
+                "comment__connections": "Information about the local node (the actual YateHSS\/HLR server that you are configuring). The information about the local node is organized in 'common' object (settings for the network, but also equipment specific information).",
+                "connections": [
+                    {
+                        "node": "Local identity. The name of a node configured in identities.",
+                        "remote_host": "Diameter remote (peer) host name. Ex: FQDN",
+                        "ip": "Optional Array of IP address to connect to. Remote host will be used if missing.",
+                        "port": "Optional port to connect to. Protocol default will be used if missing",
+                        "local_ip": "Optional Array of local IP to bind on",
+                        "dscp": "Optional socket DSCP (string or integer)",
+                        "comment__sctp_params": "Optional SCTP params. All params are optional. All integer params are unsigned. See lksctp.conf for info",
+                        "sctp_params": {
+                            "rto_initial": "Number.",
+                            "rto_min": "Number.",
+                            "rto_max": "Number.",
+                            "max_retrans": "Number.",
+                            "hb_interval": "Number.",
+                            "hb_enabled": "Boolean",
+                            "sack_delay": "Number.",
+                            "sack_freq": "Number."
+                        },
+                        "default_route": "Number. Optional default route priority"
+                    }
+                ]
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "diam_node": null
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "No connection or listener configured. \/ Invalid 'accept node' param value 'provided_value' - not configured."
+            },
+            {
+                "code": 402,
+                "message": "Missing all parameters."
+            }
+        ],
+        "examples": [
+            {
+                "description": "Configure diameter settings.",
+                "request": {
+                    "request": "set_diam_node",
+                    "node": "hss",
+                    "params": {
+                        "identities": [
+                            {
+                                "node": "epc.mnc008.mcc246.3gppnetwork.org\/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
+                                "default_priority": 0,
+                                "default_realm_priority": 0
+                            }
+                        ],
+                        "listeners": [
+                            {
+                                "local_ip": [
+                                    "192.168.50.234"
+                                ],
+                                "ipv6only": false,
+                                "sctp_params": {
+                                    "hb_interval": 30000,
+                                    "hb_enabled": true,
+                                    "sack_freq": 10
+                                }
+                            }
+                        ],
+                        "connections": [
+                            {
+                                "node": "epc.mnc008.mcc246.3gppnetwork.org\/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
+                                "local_ip": [
+                                    "192.168.50.235"
+                                ],
+                                "ip": [
+                                    "192.168.50.236"
+                                ],
+                                "port": null,
+                                "remote_host": "yatebtstest.com",
+                                "sctp_params": {
+                                    "hb_interval": 30002,
+                                    "hb_enabled": true,
+                                    "sack_freq": 10
+                                }
+                            },
+                            {
+                                "node": "epc.mnc008.mcc246.3gppnetwork.org\/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
+                                "local_ip": [
+                                    "192.168.50.237"
+                                ],
+                                "ip": [
+                                    "192.168.50.238"
+                                ],
+                                "port": null,
+                                "remote_host": "yatebts2.com",
+                                "sctp_params": {
+                                    "hb_interval": 30000,
+                                    "hb_enabled": true,
+                                    "sack_freq": 10
+                                }
+                            },
+                            {
+                                "node": "epc.mnc008.mcc246.3gppnetwork.org\/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
+                                "local_ip": [
+                                    "192.168.50.221"
+                                ],
+                                "ip": [
+                                    "192.168.50.222"
+                                ],
+                                "port": null,
+                                "remote_host": "yatedra2.epc.mnc008.mcc246.3gppnetwork.org",
+                                "sctp_params": {
+                                    "hb_interval": 30000,
+                                    "hb_enabled": true,
+                                    "sack_freq": 10
+                                }
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "code": 0,
+                    "diam_node": null
+                }
+            }
+        ]
+    },
+    {
         "name": "get_api_version",
         "description": "Retrieve the version of the API",
         "requests": [
@@ -115,6 +440,366 @@
                 "code": 501,
                 "mesage": "Cannot retrieve network interfaces"
             }
+        ],
+        "examples": [
+            {
+                "description": "Example containing also loopback.",
+                "request": {
+                    "request": "get_net_address",
+                    "filtered": false
+                },
+                "response": {
+                    "code": 0,
+                    "net_address": [
+                        {
+                            "interface": "eth0",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "ipv4": [
+                                {
+                                    "address": "192.168.168.225",
+                                    "netmask": "255.255.255.0"
+                                },
+                                {
+                                    "address": "192.168.168.103",
+                                    "netmask": "255.255.255.0",
+                                    "alias": "0"
+                                },
+                                {
+                                    "address": "192.168.168.101",
+                                    "netmask": "255.255.255.0",
+                                    "alias": "1"
+                                },
+                                {
+                                    "address": "192.168.168.102",
+                                    "netmask": "255.255.255.0",
+                                    "alias": "2"
+                                }
+                            ],
+                            "ipv6": [
+                                {
+                                    "address": "fd01::2:225",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::1:225",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::100",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::101",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::102",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::225",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::3:225",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "eth0.6",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "vlan": 6,
+                            "ipv6": [
+                                {
+                                    "address": "2a02:2a00:5600:200::225",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "eth0.9",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "vlan": 9,
+                            "ipv4": [
+                                {
+                                    "address": "192.168.0.2",
+                                    "netmask": "255.255.255.0"
+                                },
+                                {
+                                    "address": "192.168.9.2",
+                                    "netmask": "255.255.255.0",
+                                    "alias": "9"
+                                }
+                            ],
+                            "ipv6": [
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "eth0.10",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "vlan": 10,
+                            "ipv4": [
+                                {
+                                    "address": "192.168.10.2",
+                                    "netmask": "255.255.254.0"
+                                },
+                                {
+                                    "address": "192.168.10.225",
+                                    "netmask": "255.255.254.0",
+                                    "alias": "0"
+                                }
+                            ],
+                            "ipv6": [
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "eth0.978",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "vlan": 978,
+                            "ipv4": [
+                                {
+                                    "address": "10.111.102.129",
+                                    "netmask": "255.255.255.128"
+                                }
+                            ],
+                            "ipv6": [
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "eth0.979",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "vlan": 979,
+                            "ipv4": [
+                                {
+                                    "address": "10.111.102.1",
+                                    "netmask": "255.255.255.128"
+                                },
+                                {
+                                    "address": "10.112.2.47",
+                                    "netmask": "255.255.255.0",
+                                    "alias": "47"
+                                }
+                            ],
+                            "ipv6": [
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "ipsec0",
+                            "mtu": 1400
+                        }
+                    ]
+                }
+            },
+            {
+                "description": "Example having loopback and PGW tunnel removed from response.",
+                "requests": {
+                    "request": "get_net_address",
+                    "filtered": true
+                },
+                "responses": {
+                    "code": 0,
+                    "net_address": [
+                        {
+                            "interface": "eth0",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "ipv4": [
+                                {
+                                    "address": "192.168.168.225",
+                                    "netmask": "255.255.255.0"
+                                },
+                                {
+                                    "address": "192.168.168.103",
+                                    "netmask": "255.255.255.0",
+                                    "alias": "0"
+                                },
+                                {
+                                    "address": "192.168.168.101",
+                                    "netmask": "255.255.255.0",
+                                    "alias": "1"
+                                },
+                                {
+                                    "address": "192.168.168.102",
+                                    "netmask": "255.255.255.0",
+                                    "alias": "2"
+                                }
+                            ],
+                            "ipv6": [
+                                {
+                                    "address": "fd01::2:225",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::1:225",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::100",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::101",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::102",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::225",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fd01::3:225",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "eth0.6",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "vlan": 6,
+                            "ipv6": [
+                                {
+                                    "address": "2a02:2a00:5600:200::225",
+                                    "prefixlen": 64
+                                },
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "eth0.9",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "vlan": 9,
+                            "ipv4": [
+                                {
+                                    "address": "192.168.0.2",
+                                    "netmask": "255.255.255.0"
+                                },
+                                {
+                                    "address": "192.168.9.2",
+                                    "netmask": "255.255.255.0",
+                                    "alias": "9"
+                                }
+                            ],
+                            "ipv6": [
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "eth0.10",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "vlan": 10,
+                            "ipv4": [
+                                {
+                                    "address": "192.168.10.2",
+                                    "netmask": "255.255.254.0"
+                                },
+                                {
+                                    "address": "192.168.10.225",
+                                    "netmask": "255.255.254.0",
+                                    "alias": "0"
+                                }
+                            ],
+                            "ipv6": [
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "eth0.978",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "vlan": 978,
+                            "ipv4": [
+                                {
+                                    "address": "10.111.102.129",
+                                    "netmask": "255.255.255.128"
+                                }
+                            ],
+                            "ipv6": [
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "eth0.979",
+                            "ethernet": "08:00:27:66:F9:63",
+                            "vlan": 979,
+                            "ipv4": [
+                                {
+                                    "address": "10.111.102.1",
+                                    "netmask": "255.255.255.128"
+                                },
+                                {
+                                    "address": "10.112.2.47",
+                                    "netmask": "255.255.255.0",
+                                    "alias": "47"
+                                }
+                            ],
+                            "ipv6": [
+                                {
+                                    "address": "fe80::a00:27ff:fe66:f963",
+                                    "prefixlen": 64
+                                }
+                            ],
+                            "mtu": 1500
+                        },
+                        {
+                            "interface": "ipsec0",
+                            "mtu": 1400
+                        }
+                    ]
+                }
+            }
         ]
     },
     {
@@ -145,6 +830,35 @@
             {
                 "code": 201,
                 "message": "No node plugin is installed."
+            }
+        ],
+        "examples": [
+            {
+                "description": "Retrieve installed node type and software version.",
+                "request": {
+                    "request": "get_node_type"
+                },
+                "response": {
+                    "code": 0,
+                    "node_type": [
+                        {
+                            "type": "mgmt",
+                            "version": "1.2-1_r2604.mga5"
+                        },
+                        {
+                            "type": "ucn",
+                            "version": "1.1-1_r3258_r3225.mga5"
+                        },
+                        {
+                            "type": "hss",
+                            "version": "1.6-1_r3246_r3225.mga5"
+                        },
+                        {
+                            "type": "dra",
+                            "version": "1.1-1_r3101_r3225.mga5"
+                        }
+                    ]
+                }
             }
         ]
     },
