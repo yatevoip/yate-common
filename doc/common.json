@@ -1,67 +1,68 @@
 [
     {
         "name": "set_ss7_node",
-        "api_type": "config",
         "description": "This request is used to configure the SS7 settings for various equipment (ex: YateHSS\/HLR,YateSMSC, YateUCN etc.).",
         "requests": [
             {
                 "request": "set_ss7_node",
                 "node": "The node for which SS7 settings are configured. Ex: hss",
-                "comment__local": "Information about the local node (the actual equipment that you are configuring). . The information about the local node is organized in 'common' object (common settings for the network, but also equipment specific information).",
-                "local": {
-                    "common": {
-                        "dialect": "ITU\/ANSI",
-                        "netindicator": "national\/reservednational\/international",
-                        "pointcode": "Local pointcode, integer representation, range depends on dialect.",
-                        "gt": "Array of local GT. The first element is the GT we are sending from.",
-                        "hlr": "Optional, HLR number (GT) returned in Update Location.",
-                        "msisdn": "Array of MSISDN prefixes to which the HLR will respond.",
-                        "ip": "Local IP address for signaling protocols. Array or comma separated list.",
-                        "sccp_tt": "Boolean. Optional, use Translation Type in SCCP messages, defaults to false.",
-                        "sccp_pc": "Boolean. Optional, use Point Code in SCCP source address, defaults to false."
-                    }
-                },
-                "comment__linksets": "Configures the linksets and links to the STP",
-                "linksets": [
-                    {
-                        "type": "M2PA\/M3UA",
-                        "comment__type": "For M3UA pointcode is optional. Either pointcode and\/or route must be present",
-                        "pointcode": "Adjacent point code, integer representation, range depends on dialect",
-                        "route": "Optional array of PCs in integer representation to route through this STP. The string 'default' may be used as point code to indicate a default route. E.g. route: [23, 'default']",
-                        "comment__links": "M2PA: list of links. M3UA: 1 entry with connection data",
-                        "links": [
-                            {
-                                "ip": "Remote IP address. Array or comma separated list.",
-                                "port": "Integer: 1-65535. Port on the adjacent node.",
-                                "local_ip": "Array of Optional local IP address (use common if missing).",
-                                "local_port": "Optional. Integer: 1-65535. Local port number. Ignored for M3UA. Otherwise: use remote port as default if missing.",
-                                "dscp": "Optional socket DSCP (string or integer)",
-                                "comment__sctp_params": "Optional SCTP params. All params are optional. All integer params are unsigned. See lksctp.conf for info.",
-                                "sctp_params": {
-                                    "rto_initial": "Initial Retransmission Timeout. Format: NNN. Numeric value, maximum 3 digits.",
-                                    "rto_min": "Minimum Retransmission Timeout. Format: NNN. Numeric value, maximum 3 digits.",
-                                    "rto_max": "Maximum Retransmission Timeout. Format: NNN. Numeric value, maximum 3 digits.",
-                                    "max_retrans": "Maximum number of retransmissions. Format: NNN. Numeric value, maximum 3 digits.",
-                                    "hb_interval": "Heartbeat interval in milliseconds. Defaults to 30000 for Diameter transport.",
-                                    "hb_enabled": "Boolean. Enable Heartbeat. Defaults to true.",
-                                    "sack_delay": "Selective Acknowledgement delay. Between 0 and 500ms. Format: NNN. Numeric value, maximum 3 digits.",
-                                    "sack_freq": "Selective Acknowledgement frequency. Format: NNN. Numeric value, maximum 3 digits."
+                "params": {
+                    "comment__local": "Information about the local node (the actual equipment that you are configuring). . The information about the local node is organized in 'common' object (common settings for the network, but also equipment specific information).",
+                    "local": {
+                        "common": {
+                            "dialect": "ITU\/ANSI",
+                            "netindicator": "national\/reservednational\/international",
+                            "pointcode": "Local pointcode, integer representation, range depends on dialect.",
+                            "gt": "Array of local GT. The first element is the GT we are sending from.",
+                            "hlr": "Optional, HLR number (GT) returned in Update Location.",
+                            "msisdn": "Array of MSISDN prefixes to which the HLR will respond.",
+                            "ip": "Local IP address for signaling protocols. Array or comma separated list.",
+                            "sccp_tt": "Boolean. Optional, use Translation Type in SCCP messages, defaults to false.",
+                            "sccp_pc": "Boolean. Optional, use Point Code in SCCP source address, defaults to false."
+                        }
+                    },
+                    "comment__linksets": "Configures the linksets and links to the STP",
+                    "linksets": [
+                        {
+                            "type": "M2PA\/M3UA",
+                            "comment__type": "For M3UA pointcode is optional. Either pointcode and\/or route must be present",
+                            "pointcode": "Adjacent point code, integer representation, range depends on dialect",
+                            "route": "Optional array of PCs in integer representation to route through this STP. The string 'default' may be used as point code to indicate a default route. E.g. route: [23, 'default']",
+                            "comment__links": "M2PA: list of links. M3UA: 1 entry with connection data",
+                            "links": [
+                                {
+                                    "ip": "Remote IP address. Array or comma separated list.",
+                                    "port": "Integer: 1-65535. Port on the adjacent node.",
+                                    "local_ip": "Array of Optional local IP address (use common if missing).",
+                                    "local_port": "Optional. Integer: 1-65535. Local port number. Ignored for M3UA. Otherwise: use remote port as default if missing.",
+                                    "dscp": "Optional socket DSCP (string or integer)",
+                                    "comment__sctp_params": "Optional SCTP params. All params are optional. All integer params are unsigned. See lksctp.conf for info.",
+                                    "sctp_params": {
+                                        "rto_initial": "Initial Retransmission Timeout. Format: NNN. Numeric value, maximum 3 digits.",
+                                        "rto_min": "Minimum Retransmission Timeout. Format: NNN. Numeric value, maximum 3 digits.",
+                                        "rto_max": "Maximum Retransmission Timeout. Format: NNN. Numeric value, maximum 3 digits.",
+                                        "max_retrans": "Maximum number of retransmissions. Format: NNN. Numeric value, maximum 3 digits.",
+                                        "hb_interval": "Heartbeat interval in milliseconds. Defaults to 30000 for Diameter transport.",
+                                        "hb_enabled": "Boolean. Enable Heartbeat. Defaults to true.",
+                                        "sack_delay": "Selective Acknowledgement delay. Between 0 and 500ms. Format: NNN. Numeric value, maximum 3 digits.",
+                                        "sack_freq": "Selective Acknowledgement frequency. Format: NNN. Numeric value, maximum 3 digits."
+                                    }
                                 }
-                            }
-                        ],
-                        "aspid": "M3UA only. Number. Optional ASP identifier (unsigned 32 bit)",
-                        "contexts": "M3UA only. Number. Optional Array of  routing context numbers (unsigned 32 bit)",
-                        "traffic": "M3UA only. String. Optional traffic type. Possible values: unused\/override\/loadshare\/broadcast",
-                        "network_appearance": "M3UA only. Number. Optional network appearance (unsigned 32 bit)"
-                    }
-                ],
-                "comment__gt_route": "Configures the GT routes table",
-                "gt_route": [
-                    {
-                        "pc": "Number. Remote point code (must a configured one if there is no default route)",
-                        "prefix": "Number. List of GT prefixes to route to this PC, can be just [ '*' ]"
-                    }
-                ]
+                            ],
+                            "aspid": "M3UA only. Number. Optional ASP identifier (unsigned 32 bit)",
+                            "contexts": "M3UA only. Number. Optional Array of  routing context numbers (unsigned 32 bit)",
+                            "traffic": "M3UA only. String. Optional traffic type. Possible values: unused\/override\/loadshare\/broadcast",
+                            "network_appearance": "M3UA only. Number. Optional network appearance (unsigned 32 bit)"
+                        }
+                    ],
+                    "comment__gt_route": "Configures the GT routes table",
+                    "gt_route": [
+                        {
+                            "pc": "Number. Remote point code (must a configured one if there is no default route)",
+                            "prefix": "Number. List of GT prefixes to route to this PC, can be just [ '*' ]"
+                        }
+                    ]
+                }
             }
         ],
         "responses": [
@@ -73,7 +74,7 @@
         "errors": [
             {
                 "code": 401,
-                "message": "Invalid 'linkset type' value 'Ma2PA'."
+                "message": "Invalid 'linkset type' value 'M2PA'."
             },
             {
                 "code": 402,
@@ -92,52 +93,61 @@
                     "node": "hss",
                     "params": {
                         "local": {
-                            "dialect": "ANSI",
-                            "netindicator": "national",
-                            "sccp_tt": true,
-                            "sccp_pc": false,
-                            "pointcode": 33,
-                            "gt": [
-                                "8810033"
-                            ],
-                            "ip": [
-                                "192.168.50.239"
-                            ]
+                            "common": {
+                                "dialect": "ANSI",
+                                "netindicator": "national",
+                                "pointcode": 33,
+                                "gt": [
+                                    "8820033",
+                                    "88200330"
+                                ],
+                                "msisdn": [
+                                    "8827"
+                                ],
+                                "ip": "192.168.168.225"
+                            }
                         },
                         "linksets": [
                             {
                                 "type": "M2PA",
-                                "pointcode": 433,
-                                "route": [
-                                    "default"
-                                ],
+                                "pointcode": 1,
                                 "links": [
                                     {
-                                        "ip": [
-                                            "192.123.50.123"
-                                        ],
-                                        "port": 3556,
-                                        "local_port": 3565,
-                                        "sctp_params": {
-                                            "rto_initial": 111,
-                                            "rto_min": 100,
-                                            "rto_max": 999,
-                                            "max_retrans": 222,
-                                            "hb_interval": 1,
-                                            "sack_delay": 1
-                                        }
+                                        "ip": "192.168.168.222",
+                                        "port": 4533,
+                                        "local_port": 4633
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "M2PA",
+                                "pointcode": 101,
+                                "links": [
+                                    {
+                                        "ip": "192.168.168.222",
+                                        "port": 4733,
+                                        "local_port": 4833
                                     }
                                 ]
                             }
                         ],
                         "gt_route": [
                             {
-                                "pc": 455,
+                                "pc": 1,
                                 "prefix": [
+                                    "882",
+                                    "*"
+                                ]
+                            },
+                            {
+                                "pc": 101,
+                                "prefix": [
+                                    "40",
                                     "*"
                                 ]
                             }
-                        ]
+                        ],
+                        "restart": true
                     }
                 },
                 "response": {
@@ -149,77 +159,78 @@
     },
     {
         "name": "set_diam_node",
-        "api_type": "config",
         "description": "This request is used to configure the diameter settings for various equipment (ex: YateHSS\/HLR, YateUCN etc.).",
         "requests": [
             {
                 "request": "set_diam_node",
                 "node": "hss",
-                "comment__local": "Information about the local node (the actual equipment that you are configuring). The information about the local node is organized in 'common' object (settings for the network, but also equipment specific information).",
-                "local": {
-                    "common": {
-                        "relay_route_priority": "Number. Optional default route priority for remote nodes advertising. Relay application. Negative: disable. Defaults to 100."
-                    }
-                },
-                "comment__identities": "Configure local nodes",
-                "identities": [
-                    {
-                        "node": "Node identity (realm(domain_name)\/host(host_name)). Ex: example.com\/hss.example.com",
-                        "role": "String. Optional name of special role of this node",
-                        "default_priority": "Number. Optional priority to use this node if no other matches. Default 0 (disabled).",
-                        "default_realm_priority": "Number. Optional priority to use this node if only realm matches. Default 0 (disabled)."
-                    }
-                ],
-                "comment__listeners": "Configure the listeners",
-                "listeners": [
-                    {
-                        "local_ip": "Array of Local IP to bind to.",
-                        "local_port": "Optional local port number, protocol default port will be used if missing",
-                        "ipv6only": "Boolean. Optional. Accept IPv6 only connections. Ignored if local_ip is IPv4",
-                        "dscp": "Optional socket DSCP (string or integer)",
-                        "sctp_params": {
-                            "rto_initial": "Number. Unsigned. Optional. See lksctp.conf for info.",
-                            "rto_min": "Number. Unsigned. Optional. See lksctp.conf for info.",
-                            "rto_max": "Number. Unsigned. Optional. See lksctp.conf for info.",
-                            "max_retrans": "Number. Unsigned. Optional. See lksctp.conf for info.",
-                            "hb_interval": "Number. Unsigned. Optional. See lksctp.conf for info.",
-                            "hb_enabled": "Boolean",
-                            "sack_delay": "Number. Unsigned. Optional. See lksctp.conf for info.",
-                            "sack_freq": "Number. Unsigned. Optional. See lksctp.conf for info."
-                        },
-                        "comment_accept": "Optional, configure accept rule(s). If present and not empty it will restrict the list of local nodes. Handled by this listener. All identities will be handled by this listener if accept is empty",
-                        "accept": [
-                            {
-                                "node": "Node to accept, must be a configured identity",
-                                "accept_node": "Optional remote node(s) to accept. String: RegExp to match node(s) to accept \/ Array: Only remote nodes matching it will be accepted. If present and not empty only listed remote nodes will be accepted.",
-                                "default_route": "Number. Optional default route priority for accepted connections"
-                            }
-                        ]
-                    }
-                ],
-                "comment__connections": "Information about the local node (the actual YateHSS\/HLR server that you are configuring). The information about the local node is organized in 'common' object (settings for the network, but also equipment specific information).",
-                "connections": [
-                    {
-                        "node": "Local identity. The name of a node configured in identities.",
-                        "remote_host": "Diameter remote (peer) host name. Ex: FQDN",
-                        "ip": "Optional Array of IP address to connect to. Remote host will be used if missing.",
-                        "port": "Optional port to connect to. Protocol default will be used if missing",
-                        "local_ip": "Optional Array of local IP to bind on",
-                        "dscp": "Optional socket DSCP (string or integer)",
-                        "comment__sctp_params": "Optional SCTP params. All params are optional. All integer params are unsigned. See lksctp.conf for info",
-                        "sctp_params": {
-                            "rto_initial": "Number.",
-                            "rto_min": "Number.",
-                            "rto_max": "Number.",
-                            "max_retrans": "Number.",
-                            "hb_interval": "Number.",
-                            "hb_enabled": "Boolean",
-                            "sack_delay": "Number.",
-                            "sack_freq": "Number."
-                        },
-                        "default_route": "Number. Optional default route priority"
-                    }
-                ]
+                "params": {
+                    "comment__local": "Information about the local node (the actual equipment that you are configuring). The information about the local node is organized in 'common' object (settings for the network, but also equipment specific information).",
+                    "local": {
+                        "common": {
+                            "relay_route_priority": "Number. Optional default route priority for remote nodes advertising. Relay application. Negative: disable. Defaults to 100."
+                        }
+                    },
+                    "comment__identities": "Configure local nodes",
+                    "identities": [
+                        {
+                            "node": "Node identity (realm(domain_name)\/host(host_name)). Ex: example.com\/hss.example.com",
+                            "role": "String. Optional name of special role of this node",
+                            "default_priority": "Number. Optional priority to use this node if no other matches. Default 0 (disabled).",
+                            "default_realm_priority": "Number. Optional priority to use this node if only realm matches. Default 0 (disabled)."
+                        }
+                    ],
+                    "comment__listeners": "Configure the listeners",
+                    "listeners": [
+                        {
+                            "local_ip": "Array of Local IP to bind to.",
+                            "local_port": "Optional local port number, protocol default port will be used if missing",
+                            "ipv6only": "Boolean. Optional. Accept IPv6 only connections. Ignored if local_ip is IPv4",
+                            "dscp": "Optional socket DSCP (string or integer)",
+                            "sctp_params": {
+                                "rto_initial": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                                "rto_min": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                                "rto_max": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                                "max_retrans": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                                "hb_interval": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                                "hb_enabled": "Boolean",
+                                "sack_delay": "Number. Unsigned. Optional. See lksctp.conf for info.",
+                                "sack_freq": "Number. Unsigned. Optional. See lksctp.conf for info."
+                            },
+                            "comment_accept": "Optional, configure accept rule(s). If present and not empty it will restrict the list of local nodes. Handled by this listener. All identities will be handled by this listener if accept is empty",
+                            "accept": [
+                                {
+                                    "node": "Node to accept, must be a configured identity",
+                                    "accept_node": "Optional remote node(s) to accept. String: RegExp to match node(s) to accept \/ Array: Only remote nodes matching it will be accepted. If present and not empty only listed remote nodes will be accepted.",
+                                    "default_route": "Number. Optional default route priority for accepted connections"
+                                }
+                            ]
+                        }
+                    ],
+                    "comment__connections": "Information about the local node (the actual YateHSS\/HLR server that you are configuring). The information about the local node is organized in 'common' object (settings for the network, but also equipment specific information).",
+                    "connections": [
+                        {
+                            "node": "Local identity. The name of a node configured in identities.",
+                            "remote_host": "Diameter remote (peer) host name. Ex: FQDN",
+                            "ip": "Optional Array of IP address to connect to. Remote host will be used if missing.",
+                            "port": "Optional port to connect to. Protocol default will be used if missing",
+                            "local_ip": "Optional Array of local IP to bind on",
+                            "dscp": "Optional socket DSCP (string or integer)",
+                            "comment__sctp_params": "Optional SCTP params. All params are optional. All integer params are unsigned. See lksctp.conf for info",
+                            "sctp_params": {
+                                "rto_initial": "Number.",
+                                "rto_min": "Number.",
+                                "rto_max": "Number.",
+                                "max_retrans": "Number.",
+                                "hb_interval": "Number.",
+                                "hb_enabled": "Boolean",
+                                "sack_delay": "Number.",
+                                "sack_freq": "Number."
+                            },
+                            "default_route": "Number. Optional default route priority"
+                        }
+                    ]
+                }
             }
         ],
         "responses": [
@@ -325,6 +336,119 @@
         ]
     },
     {
+        "name": "set_regexroute",
+        "description": "This request is used to configure the regexroute settings for various equipment (ex: YateHSS\/HLR, YateUCN etc.).",
+        "requests": [
+            {
+                "request": "set_regexroute",
+                "node": "ucn",
+                "params": {
+                    "rules": [
+                        {
+                            "name": "string, optional. Name of template used for adding comments in the written file to make reading easier.",
+                            "rules": "string, mandatory. Contains rules that are to be written for this template in regexroute.  The string must be in valid Yate configuration format."
+                        },
+                        "..."
+                    ]
+                }
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "api_version": "Version of the package containing the API. In case the API version is unavailable the returned value is 'unknown'."
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "Invalid 'rules' value - Must be an array."
+            },
+            {
+                "code": 402,
+                "message": "Missing 'rule[0].rules' parameter."
+            }
+        ],
+        "examples": [
+            {
+                "description": "Set regexroute rules for hss.",
+                "request": {
+                    "request": "set_regexroute",
+                    "node": "hss",
+                    "params": {
+                        "rules": [
+                            {
+                                "name": "route_msrn",
+                                "rules": "[default]\n${roaming}^80080000=sip\/sip:+${roaming}@127.0.0.1;oconnection_id=gmsc\n${roaming}^80080111=sip\/sip:+${roaming}@127.0.0.2;oconnection_id=gmsc\n${roaming}^80080002=sip\/sip:+${roaming}@127.0.0.3;oconnection_id=gmsc"
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "code": 0,
+                    "regexroute": "hss"
+                }
+            }
+        ]
+    },
+    {
+        "name": "set_javascript",
+        "description": "This request is used to configure the javascript scripts for various equipment (ex: YateHSS\/HLR, YateUCN etc.).",
+        "requests": [
+            {
+                "request": "set_javascript",
+                "node": "hss",
+                "params": {
+                    "scripts": [
+                        {
+                            "name": "string, optional. Name of script used for adding comments in the written file to make reading easier.",
+                            "rules": "string, mandatory. Contains rules that are to be written for this template in regexroute.  The string must be in valid Yate configuration format.",
+                            "script": "string, mandatory. Contains the JS script that will be written for this template in javascript.  The string must be in valid Yate configuration format."
+                        },
+                        "..."
+                    ]
+                }
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "javascript": "hss"
+            }
+        ],
+        "errors": [
+            {
+                "code": 402,
+                "message": "Missing 'scripts[0].script' parameter."
+            },
+            {
+                "code": 401,
+                "message": "Invalid 'scripts' value - Must be an array."
+            }
+        ],
+        "examples": [
+            {
+                "description": "Basic request, successful response",
+                "request": {
+                    "request": "set_javascript",
+                    "node": "hss",
+                    "params": {
+                        "scripts": [
+                            {
+                                "name": "test",
+                                "script": "console.log(\"test\");"
+                            }
+                        ]
+                    }
+                },
+                "response": {
+                    "code": 0,
+                    "javascript": "hss"
+                }
+            }
+        ]
+    },
+    {
         "name": "get_api_version",
         "description": "Retrieve the version of the API",
         "requests": [
@@ -335,7 +459,7 @@
         "responses": [
             {
                 "code": 0,
-                "api_version": "Version of the package containing the API, possibly 'unknown'"
+                "api_version": "Version of the package containing the API. In case the API version is unavailable the returned value is 'unknown'."
             }
         ],
         "examples": [
@@ -362,7 +486,7 @@
         "responses": [
             {
                 "code": 0,
-                "serial": "OEM serial string"
+                "serial": "OEM serial string. In case the OEM file is present but the number is missing will return 'serial':null."
             }
         ],
         "errors": [
@@ -390,12 +514,12 @@
     },
     {
         "name": "get_net_address",
-        "description": "Retrieves a list of IP addresses of the machine",
+        "description": "Retrieves a list of network interface information from the equipment.",
         "requests": [
             {
                 "request": "get_net_address",
                 "params": {
-                    "filtered": "Boolean to remove loopback and PGW tunnels (optional, default true)"
+                    "filtered": "Boolean. If true removes loopback and PGW tunnels created by Yate. (optional, default true)."
                 }
             }
         ],
@@ -623,11 +747,11 @@
             },
             {
                 "description": "Example having loopback and PGW tunnel removed from response.",
-                "requests": {
+                "request": {
                     "request": "get_net_address",
                     "filtered": true
                 },
-                "responses": {
+                "response": {
                     "code": 0,
                     "net_address": [
                         {
@@ -864,7 +988,7 @@
     },
     {
         "name": "get_node_status",
-        "description": "Get the operational status of a node",
+        "description": "Retrieves operational status and software version of the node.",
         "requests": [
             {
                 "request": "get_node_status",
@@ -888,6 +1012,29 @@
             {
                 "code": 401,
                 "message": "Unsupported node type 'NODE'."
+            },
+            {
+                "code": 200,
+                "message": "Cannot connect to Yate on port 'NNNN'.",
+                "version": "yate-package-version"
+            }
+        ],
+        "examples": [
+            {
+                "description": "Retrieve filtered logs for hss of level 'note'.",
+                "request": {
+                    "request": "get_node_status",
+                    "node": "dra"
+                },
+                "response": {
+                    "code": 0,
+                    "status": {
+                        "operational": false,
+                        "level": "MILD",
+                        "state": "Disconnected"
+                    },
+                    "version": "unknown"
+                }
             }
         ]
     },
@@ -922,6 +1069,22 @@
             {
                 "code": 501,
                 "message": "Cannot retrieve logs from: \/var\/log\/yate-NODE"
+            }
+        ],
+        "examples": [
+            {
+                "description": "Retrieve filtered logs for hss of level 'note'.",
+                "request": {
+                    "request": "get_node_logs",
+                    "node": "hss",
+                    "params": {
+                        "level": "note"
+                    }
+                },
+                "response": {
+                    "HTTP Content-Type": "text\/plain",
+                    "HTTP Body": "Filtered log lines of the node"
+                }
             }
         ]
     },
@@ -968,11 +1131,38 @@
                 "code": 501,
                 "message": "Cannot get configuration from: \/etc\/yate\/NODE\/FILE"
             }
+        ],
+        "examples": [
+            {
+                "description": "Retrieve archive of all config files for hss.",
+                "request": {
+                    "request": "get_node_config",
+                    "node": "hss"
+                },
+                "response": {
+                    "HTTP Content-Type": "application\/octet-stream",
+                    "HTTP Body": "Archive of type tar.gz of config files in the node config directory"
+                }
+            },
+            {
+                "description": "Retrieve yate-hss.conf configuraion file for hss.",
+                "request": {
+                    "request": "get_node_config",
+                    "node": "hss",
+                    "params": {
+                        "file": "yate-hss.conf"
+                    }
+                },
+                "response": {
+                    "HTTP Content-Type": "application\/octet-stream",
+                    "HTTP Body": "Requested config file content"
+                }
+            }
         ]
     },
     {
         "name": "node_restart",
-        "description": "Completely restart a node service",
+        "description": "Restarts the specified node of the equipment at the Operating System service level.",
         "requests": [
             {
                 "request": "node_restart",
@@ -993,6 +1183,19 @@
             {
                 "code": 501,
                 "message": "Could not restart node NODE"
+            }
+        ],
+        "examples": [
+            {
+                "description": "Restart hss node.",
+                "request": {
+                    "request": "node_restart",
+                    "node": "hss"
+                },
+                "response": {
+                    "code": 0,
+                    "restarted": "hss"
+                }
             }
         ]
     },
@@ -1020,6 +1223,19 @@
                 "code": 501,
                 "message": "Could not reload node NODE"
             }
+        ],
+        "examples": [
+            {
+                "description": "Reload the configuration for hss node.",
+                "request": {
+                    "request": "node_reload",
+                    "node": "hss"
+                },
+                "response": {
+                    "code": 0,
+                    "reloaded": "hss"
+                }
+            }
         ]
     },
     {
@@ -1045,7 +1261,7 @@
                         "user": "Number of CPU seconds consumed in userspace code",
                         "kernel": "Number of CPU seconds consumed in kernel code"
                     },
-                    "other modules ...": {
+                    "product specific statistics grouped by component ...": {
                         "param1": "Value of parameter #1",
                         "param2": "Value of parameter #2",
                         "other params...": "Each parameter with its value"
@@ -1061,6 +1277,93 @@
             {
                 "code": 200,
                 "message": "Cannot connect to Yate on port 'NNNN'."
+            }
+        ],
+        "examples": [
+            {
+                "code": 0,
+                "stats": {
+                    "engine": {
+                        "version": "6.1.1",
+                        "revision": 2187,
+                        "nodename": "mobile-devel5",
+                        "runid": 1576493241,
+                        "plugins": 6,
+                        "inuse": 1,
+                        "handlers": 120,
+                        "hooks": 4,
+                        "messages": 0,
+                        "maxqueue": 3,
+                        "messageage": 214,
+                        "messagerate": 2,
+                        "maxmsgrate": 237,
+                        "enqueued": 174208,
+                        "dequeued": 174208,
+                        "dispatched": 182624,
+                        "supervised": true,
+                        "runattempt": 1,
+                        "lastsignal": 0,
+                        "threads": 21,
+                        "workers": 1,
+                        "mutexes": 69,
+                        "semaphores": 14,
+                        "acceptcalls": "accept",
+                        "congestion": 0,
+                        "node_version": "unknown"
+                    },
+                    "uptime": {
+                        "wall": 166983,
+                        "user": 2807,
+                        "kernel": 19693
+                    },
+                    "hss_cli": {
+                        "sims": 940,
+                        "subscribers": 832,
+                        "cs_total": 755,
+                        "cs_active": 0,
+                        "ps_total": 756,
+                        "ps_active": 0,
+                        "ims_total": 89,
+                        "ims_active": 0,
+                        "operational": "(standalone)"
+                    },
+                    "auc_map": {
+                        "auth2g": 0,
+                        "auth3g": 0,
+                        "auth4g": 0,
+                        "resyncs": 0,
+                        "unknowns": 0,
+                        "illegals": 0,
+                        "inactives": 0,
+                        "reports": 0
+                    },
+                    "hss_gtt": {
+                        "local": 0,
+                        "imsi": 0,
+                        "msisdn": 0,
+                        "stp": 0,
+                        "back": 0,
+                        "fail": 0
+                    },
+                    "auc_diam": {
+                        "auth2g": 0,
+                        "auth3g": 0,
+                        "auth4g": 0,
+                        "resyncs": 0,
+                        "unknowns": 0,
+                        "illegals": 0,
+                        "inactives": 0
+                    },
+                    "hss_cluster": {
+                        "nodename": "mobile-devel5",
+                        "remote": 0,
+                        "state": "standalone"
+                    },
+                    "mysqldb": {
+                        "conns": 1,
+                        "failed": 0
+                    }
+                }
             }
         ]
     },
@@ -1089,6 +1392,16 @@
                     },
                     "..."
                 ]
+            }
+        ],
+        "errors": [
+            {
+                "code": 401,
+                "message": "No documentation for node type 'NODE'."
+            },
+            {
+                "code": 401,
+                "message": "File format error for node 'NODE'."
             }
         ],
         "examples": [
@@ -1159,6 +1472,130 @@
             {
                 "code": 401,
                 "message": "File format error for node 'NODE'."
+            }
+        ],
+        "examples": [
+            {
+                "description": "Retrieve list of common API requests with their detailed description",
+                "request": {
+                    "request": "info_all"
+                },
+                "response": {
+                    "code": 0,
+                    "api_info": {
+                        "api_version": "unknown",
+                        "requests": [
+                            {
+                                "name": "get_node_type",
+                                "description": "Get a list of all installed node types with their versions",
+                                "requests": [
+                                    {
+                                        "request": "get_node_type"
+                                    }
+                                ],
+                                "responses": [
+                                    {
+                                        "code": 0,
+                                        "node_type": [
+                                            {
+                                                "type": "Type of node #1",
+                                                "version\"": "Version of node #1 or \"unknown\""
+                                            },
+                                            {
+                                                "type": "Type of node #2",
+                                                "version\"": "Version of node #2 or \"unknown\""
+                                            },
+                                            "..."
+                                        ]
+                                    }
+                                ],
+                                "errors": [
+                                    {
+                                        "code": 201,
+                                        "message": "No node plugin is installed."
+                                    }
+                                ],
+                                "examples": [
+                                    {
+                                        "description": "Retrieve installed node type and software version.",
+                                        "request": {
+                                            "request": "get_node_type"
+                                        },
+                                        "response": {
+                                            "code": 0,
+                                            "node_type": [
+                                                {
+                                                    "type": "mgmt",
+                                                    "version": "1.2-1_r2604.mga5"
+                                                },
+                                                {
+                                                    "type": "ucn",
+                                                    "version": "1.1-1_r3258_r3225.mga5"
+                                                },
+                                                {
+                                                    "type": "hss",
+                                                    "version": "1.6-1_r3246_r3225.mga5"
+                                                },
+                                                {
+                                                    "type": "dra",
+                                                    "version": "1.1-1_r3101_r3225.mga5"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "get_node_status",
+                                "description": "Get the operational status of a node",
+                                "requests": [
+                                    {
+                                        "request": "get_node_status",
+                                        "node": "Type of node to request status from"
+                                    }
+                                ],
+                                "responses": [
+                                    {
+                                        "code": 0,
+                                        "operational": "Boolean operational status of the node",
+                                        "level": "Symbolic reporting level for the current state",
+                                        "state": "Short description of the node state",
+                                        "service": "Longer, multiline description of the node service state"
+                                    }
+                                ],
+                                "errors": [
+                                    {
+                                        "code": 401,
+                                        "message": "Illegal node type"
+                                    },
+                                    {
+                                        "code": 401,
+                                        "message": "Unsupported node type 'NODE'."
+                                    }
+                                ],
+                                "examples": [
+                                    {
+                                        "description": "Retrieve filtered logs for hss of level 'note'.",
+                                        "request": {
+                                            "request": "get_node_status",
+                                            "node": "dra"
+                                        },
+                                        "response": {
+                                            "code": 0,
+                                            "status": {
+                                                "operational": false,
+                                                "level": "MILD",
+                                                "state": "Disconnected"
+                                            },
+                                            "version": "unknown"
+                                        }
+                                    }
+                                ]
+                            },
+                            "..."
+                        ]
+                    }
+                }
             }
         ]
     }
