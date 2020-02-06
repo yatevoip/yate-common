@@ -1281,87 +1281,94 @@
         ],
         "examples": [
             {
-                "code": 0,
-                "stats": {
-                    "engine": {
-                        "version": "6.1.1",
-                        "revision": 2187,
-                        "nodename": "mobile-devel5",
-                        "runid": 1576493241,
-                        "plugins": 6,
-                        "inuse": 1,
-                        "handlers": 120,
-                        "hooks": 4,
-                        "messages": 0,
-                        "maxqueue": 3,
-                        "messageage": 214,
-                        "messagerate": 2,
-                        "maxmsgrate": 237,
-                        "enqueued": 174208,
-                        "dequeued": 174208,
-                        "dispatched": 182624,
-                        "supervised": true,
-                        "runattempt": 1,
-                        "lastsignal": 0,
-                        "threads": 21,
-                        "workers": 1,
-                        "mutexes": 69,
-                        "semaphores": 14,
-                        "acceptcalls": "accept",
-                        "congestion": 0,
-                        "node_version": "unknown"
-                    },
-                    "uptime": {
-                        "wall": 166983,
-                        "user": 2807,
-                        "kernel": 19693
-                    },
-                    "hss_cli": {
-                        "sims": 940,
-                        "subscribers": 832,
-                        "cs_total": 755,
-                        "cs_active": 0,
-                        "ps_total": 756,
-                        "ps_active": 0,
-                        "ims_total": 89,
-                        "ims_active": 0,
-                        "operational": "(standalone)"
-                    },
-                    "auc_map": {
-                        "auth2g": 0,
-                        "auth3g": 0,
-                        "auth4g": 0,
-                        "resyncs": 0,
-                        "unknowns": 0,
-                        "illegals": 0,
-                        "inactives": 0,
-                        "reports": 0
-                    },
-                    "hss_gtt": {
-                        "local": 0,
-                        "imsi": 0,
-                        "msisdn": 0,
-                        "stp": 0,
-                        "back": 0,
-                        "fail": 0
-                    },
-                    "auc_diam": {
-                        "auth2g": 0,
-                        "auth3g": 0,
-                        "auth4g": 0,
-                        "resyncs": 0,
-                        "unknowns": 0,
-                        "illegals": 0,
-                        "inactives": 0
-                    },
-                    "hss_cluster": {
-                        "nodename": "mobile-devel5",
-                        "remote": 0,
-                        "state": "standalone"
-                    },
-                    "mysqldb": {
-                        "conns": 1,
-                        "failed": 0
+                "description": "Retrieve statistics from hss node",
+                "request": {
+                    "request": "query_stats",
+                    "node": "hss"
+                },
+                "response": {
+                    "code": 0,
+                    "stats": {
+                        "engine": {
+                            "version": "6.1.1",
+                            "revision": 2187,
+                            "nodename": "mobile-devel5",
+                            "runid": 1576493241,
+                            "plugins": 6,
+                            "inuse": 1,
+                            "handlers": 120,
+                            "hooks": 4,
+                            "messages": 0,
+                            "maxqueue": 3,
+                            "messageage": 214,
+                            "messagerate": 2,
+                            "maxmsgrate": 237,
+                            "enqueued": 174208,
+                            "dequeued": 174208,
+                            "dispatched": 182624,
+                            "supervised": true,
+                            "runattempt": 1,
+                            "lastsignal": 0,
+                            "threads": 21,
+                            "workers": 1,
+                            "mutexes": 69,
+                            "semaphores": 14,
+                            "acceptcalls": "accept",
+                            "congestion": 0,
+                            "node_version": "unknown"
+                        },
+                        "uptime": {
+                            "wall": 166983,
+                            "user": 2807,
+                            "kernel": 19693
+                        },
+                        "hss_cli": {
+                            "sims": 940,
+                            "subscribers": 832,
+                            "cs_total": 755,
+                            "cs_active": 0,
+                            "ps_total": 756,
+                            "ps_active": 0,
+                            "ims_total": 89,
+                            "ims_active": 0,
+                            "operational": "(standalone)"
+                        },
+                        "auc_map": {
+                            "auth2g": 0,
+                            "auth3g": 0,
+                            "auth4g": 0,
+                            "resyncs": 0,
+                            "unknowns": 0,
+                            "illegals": 0,
+                            "inactives": 0,
+                            "reports": 0
+                        },
+                        "hss_gtt": {
+                            "local": 0,
+                            "imsi": 0,
+                            "msisdn": 0,
+                            "stp": 0,
+                            "back": 0,
+                            "fail": 0
+                        },
+                        "auc_diam": {
+                            "auth2g": 0,
+                            "auth3g": 0,
+                            "auth4g": 0,
+                            "resyncs": 0,
+                            "unknowns": 0,
+                            "illegals": 0,
+                            "inactives": 0
+                        },
+                        "hss_cluster": {
+                            "nodename": "mobile-devel5",
+                            "remote": 0,
+                            "state": "standalone"
+                        },
+                        "mysqldb": {
+                            "conns": 1,
+                            "failed": 0
+                        }
                     }
                 }
             }
