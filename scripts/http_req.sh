@@ -89,7 +89,7 @@ while read -r REPLY; do
 		test -n "$tmp" && opt[$((len++))]="--header=Content-Type:$tmp"
 	    fi
 	    tmp="${params#*:header=}"; tmp="${tmp%%:*}"
-	    tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; //g'`
+	    tmp=`echo "$tmp" | sed 's/%z/:/g; s/%%/%/g; s/^ \+//; s/ \+$//'`
 	    test -n "$tmp" && opt[$((len++))]="--header=$tmp"
 	    tmp="${params#*:agent=}"; tmp="${tmp%%:*}"
 	    if [ -n "$tmp" ]; then
