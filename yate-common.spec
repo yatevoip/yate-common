@@ -26,7 +26,7 @@
 
 Summary:	Common files for Yate based products
 Name:		yate-common
-Version:	1.7
+Version:	1.8
 Release:	%{buildnum}%{?revision}%{?dist}
 License:	GPL
 Vendor:		Null Team Impex SRL
