@@ -35,6 +35,7 @@ Source:		%{tarname}.tar.gz
 Group:		Applications/Communication
 BuildArch:	noarch
 BuildRoot:	%{_tmppath}/%{tarname}-root
+Provides:	yate-http_simple
 %if "%{systemd}" != "0"
 Requires:	/usr/bin/systemctl
 %else
