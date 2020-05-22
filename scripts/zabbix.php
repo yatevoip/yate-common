@@ -166,15 +166,28 @@ class ZabbixServer
 	    Yate::Output("Failed to send $len octets to " . $this->info);
 	    return false;
 	}
+	Yate::Debug("Sent $len octets message to " . $this->info);
 	$this->header = "";
 	return true;
     }
 
     function readData($when)
     {
+	if (feof($this->socket)) {
+	    Yate::Output("Received EOF from " . $this->info);
+	    return false;
+	}
+	if ($this->timeout) {
+	    if ($when >= $this->timeout) {
+		Yate::Output("Timeout reading from " . $this->info);
+		return false;
+	    }
+	}
+	else
+	    $this->timeout = $when + ZabbixServer::$iotimeout;
 	if (!isset($this->length)) {
 	    $r = fread($this->socket,13 - strlen($this->header));
-	    if ((false === $r) || ("" == $r)) {
+	    if (false === $r) {
 		Yate::Output("Error reading header from " . $this->info);
 		return false;
 	    }
@@ -195,10 +208,11 @@ class ZabbixServer
 	    Yate::Debug("Will read $len octets payload from " . $this->info);
 	    $this->length = $len;
 	    $this->buffer = "";
+	    $this->timeout = $when + ZabbixServer::$iotimeout;
 	}
 
 	$r = fread($this->socket,$this->length - strlen($this->buffer));
-	if ((false === $r) || ("" == $r)) {
+	if (false === $r) {
 	    Yate::Output("Error reading payload from " . $this->info);
 	    return false;
 	}
