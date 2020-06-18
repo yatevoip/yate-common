@@ -194,20 +194,36 @@ function getNodeLogs($node,$params)
 	$lines = 10;
     else if ($lines > 10000)
 	$lines = 10000;
+
+    $start_log = getParam($params,"start_log","");
+    if ($start_log && !isset($params["lines"]))
+	$lines = FALSE;
+
+    $stop_log = getParam($params,"stop_log","");
+
     for (;;) {
 	$line = fgets($fh,4096);
 	if ($line === false)
 	    break;
+	if ($stop_log && preg_match('/'.$stop_log.'/',$line)) {
+	    $out[] = $line;
+	    break;
+	}
 	if (preg_match('/^Supervisor \([0-9]+\) is starting/',$line))
+	    $out = array();
+	if ($start_log && preg_match('/'.$start_log.'/',$line))
 	    $out = array();
 	if (!preg_match($level,$line))
 	    continue;
 	while (ord(substr($line,strlen($line) - 1)) <= 0x20)
 	    $line = substr($line,0,strlen($line) - 1);
-	while (count($out) >= $lines)
-	    array_shift($out);
+	if ($lines!==FALSE) {
+	    while (count($out) >= $lines)
+		array_shift($out);
+	}
 	$out[] = $line;
     }
+
     pclose($fh);
 
     return array(
@@ -267,6 +283,7 @@ function getApiInfo($node, $request)
     if ((null === $node) || ("" == $node))
 	$node = "common";
     $info = @file_get_contents("$component_dir/$node.json");
+   
     if ($info)
 	$info = json_decode($info,true);
     else if (function_exists("yaml_parse_file") && file_exists("$component_dir/$node.yaml"))
@@ -352,7 +369,7 @@ function processRequest($json,$recv)
 	case "node_reload":
 	    return restartNode($node,"reload");
 	case "info":
-	     return getApiInfo($node,getParam($params,"request_info",getParam($params,"$1")));
+	    return getApiInfo($node,getParam($params,"request_info",getParam($params,"$1")));
     }
     if (preg_match('/^info[:_][A-Za-z]/',$req))
 	return getApiInfo($node,substr($req,5));
