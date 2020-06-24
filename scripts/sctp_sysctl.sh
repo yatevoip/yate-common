@@ -14,9 +14,10 @@ if ! grep -q -i 'sctp' /etc/sysctl.conf 2>/dev/null; then
     cat <<-EOF >>/etc/sysctl.conf
 	# SCTP parameters more suitable for telephony
 	net.sctp.rto_min = 200
-	net.sctp.rto_max = 800
+	net.sctp.rto_max = 400
 	net.sctp.rto_initial = 200
 	net.sctp.hb_interval = 20000
+	net.sctp.path_max_retrans = 2
 	EOF
     sysctl -p
 fi
