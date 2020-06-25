@@ -250,12 +250,18 @@ function onInterval()
     if (!Server.timer_list.length)
 	return;
     var srv = Server.timer_list[Server.check_idx++];
-    Engine.debug(Engine.DebugInfo,"Checking server #" + (Server.check_idx  - 1),srv.name);
-    if (srv.check)
-	srv.check();
+    if (srv) {
+	Engine.debug(Engine.DebugInfo,"Checking server #" + (Server.check_idx  - 1),srv.name);
+	if (srv.check)
+	    srv.check();
+	else
+	    Engine.debug(Engine.DebugWarn,"Missing implementation for checking state of server '" + srv.name + "'");
+    }
+    // re-check the list, it may have been modified during check
+    if (Server.timer_list.length)
+	Server.check_idx %= Server.timer_list.length;
     else
-	Engine.debug(Engine.DebugWarn,"Missing implementation for checking state of server '" + srv.name + "'");
-    Server.check_idx %= Server.timer_list.length;
+	Server.check_idx = 0;
 }
 
 function configServers(config)
@@ -373,9 +379,9 @@ function onHalt()
 	for (var s of Server.list)
 	    s.cleanup();
     }
-    Server.list = undefined;
-    Server.block_list = undefined;
-    Server.timer_list = undefined;
+    Server.list = { };
+    Server.block_list = { };
+    Server.timer_list = [ ];
     clearTimer();
 }
 
