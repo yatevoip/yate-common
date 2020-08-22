@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+# yate-common:	Notify Yate cluster manager on machine start
+#
+# chkconfig: 345 99 10
+# description: Notify Yate cluster manager on machine start
+#
+### BEGIN INIT INFO
+# Provides: yate-common
+# Required-Start: $all
+# Should-Start: codemeter
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 2 6
+# Short-Description: Notifier for Yate cluster management
+### END INIT INFO
+
+# Notifier command line options, do not edit them here
+OPTS=""
+
+# To override create file /etc/sysconfig/yate-ott and put OPTS=... in it
+[ -r /etc/sysconfig/yate-common ] && . /etc/sysconfig/yate-common
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+RETVAL=0
+
+start() {
+    echo -n $"Starting YATE-COMMON: "
+    export LANG=C LANGUAGE=C
+    /usr/share/yate/scripts/node_starts.php $OPTS
+    RETVAL=$?
+    echo
+}
+
+# See how we were called.
+case "$1" in
+    start|restart|reload)
+	
+	;;
+    stop)
+	exit
+	;;
+    *)
+	echo $"Usage: $0 {start|stop|restart|reload}"
+	;;
+esac
+exit $RETVAL

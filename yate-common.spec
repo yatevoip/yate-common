@@ -78,6 +78,7 @@ based products.
 %dir %{_datadir}/yate/api
 %{_datadir}/yate/scripts/*
 %{_datadir}/yate/api/*
+%exclude %{_datadir}/yate/scripts/node_starts.php
 /var/www/html/api.php
 /var/www/html/api_library.php
 /var/www/html/api_network.php
@@ -114,6 +115,39 @@ if [ "X$1" = "X1" ]; then
 fi
 
 
+%package start
+Summary:	Notifies Yate cluster management about machine start
+Group:		Applications/Communication
+Requires:	%{name} = %{version}-%{release}
+Requires:	php-curl
+
+%description start
+This package notifies the Yate cluster management when a machine providing Yate
+services has been (re)started.
+
+%files start
+%{_datadir}/yate/scripts/node_starts.php
+%if "%{systemd}" != "0"
+%{_unitdir}/%{name}.service
+%else
+%{_initrddir}/%{name}
+%endif
+
+%post start
+%if "%{systemd}" != "0"
+    /usr/bin/systemctl daemon-reload
+    /usr/bin/systemctl restart %{name}.service
+%else
+    /sbin/service %{name} restart
+%endif
+if [ "X$1" = "X1" ]; then
+%if "%{systemd}" != "0"
+    /usr/bin/systemctl enable %{name}.service
+%else
+    /sbin/chkconfig %{name} on
+%endif
+fi
+
 %prep
 %setup -q -n %{name}
 
@@ -137,6 +171,13 @@ chmod +x %{local_find_requires}
 
 
 %install
+%if "%{systemd}" != "0"
+mkdir -p %{buildroot}%{_unitdir}
+cp -p %{name}.service %{buildroot}%{_unitdir}/
+%else
+mkdir -p %{buildroot}%{_initrddir}
+cp -p %{name}.init %{buildroot}%{_initrddir}/%{name}-start
+%endif
 mkdir -p %{buildroot}%{_sysconfdir}/sudoers.d
 mkdir -p %{buildroot}%{_datadir}/yate/api
 mkdir -p %{buildroot}%{_datadir}/yate/scripts
@@ -153,5 +194,8 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sun Aug 22 2020 Paul Chitescu <paulc@null.ro>
+- Added "start" subpackage
+
 * Wed Apr 30 2014 Paul Chitescu <paulc@null.ro>
 - Created specfile

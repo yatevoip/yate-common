@@ -1,0 +1,17 @@
+[Unit]
+Description=Notify Yate cluster manager on machine start
+After=httpd.service multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/share/yate/scripts/node_starts.php $OPTS
+KillMode=process
+Restart=no
+Environment="LANG=C" "LANGUAGE=C"
+# Notifier command line options, do not edit them here
+Environment="OPTS="
+# To override create file /etc/sysconfig/yate-common and put OPTS=... in it
+EnvironmentFile=-/etc/sysconfig/yate-common
+
+[Install]
+WantedBy=multi-user.target
