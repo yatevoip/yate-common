@@ -92,10 +92,15 @@ if ("" != $notify_url) {
 	$tmp = parse_url($notify_url,PHP_URL_HOST);
 	if (false !== $tmp) {
 	    $tmp = gethostbyname($tmp);
+	    if (preg_match('/^\[.*\]$/',$tmp))
+		$tmp = substr($tmp,1,-1);
 	    $s = socket_create(((false !== strpos($tmp,":")) ? AF_INET6 : AF_INET),SOCK_DGRAM,SOL_UDP);
 	    if (socket_connect($s,$tmp,1024)) {
-		if (socket_getsockname($s,$tmp))
+		if (socket_getsockname($s,$tmp)) {
+		    if (false !== strpos($tmp,":"))
+			$tmp = "[$tmp]";
 		    $my_api_url = "http://$tmp/api.php";
+		}
 		socket_close($s);
 	    }
 	}
