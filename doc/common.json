@@ -513,6 +513,39 @@
         ]
     },
     {
+        "name": "get_host_name",
+        "description": "Retrieves the name of the host as configured locally.",
+        "requests": [
+            {
+                "request": "get_host_name"
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "hostname": "Name of the host as configured"
+            }
+        ],
+        "errors": [
+            {
+                "code": 501,
+                "mesage": "Cannot retrieve host name"
+            }
+        ],
+        "examples": [
+            {
+                "description": "Example for unconfigured node.",
+                "request": {
+                    "request": "get_host_name"
+                },
+                "response": {
+                    "code": 0,
+                    "hostname":"localhost"
+                }
+            }
+        ]
+    },
+    {
         "name": "get_net_address",
         "description": "Retrieves a list of network interface information from the equipment.",
         "requests": [

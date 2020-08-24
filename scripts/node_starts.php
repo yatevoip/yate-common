@@ -94,6 +94,9 @@ if ("" != $notify_url) {
     );
     if ("" != $my_api_url && "-" != $my_api_url)
 	$params["api_url"] = $my_api_url;
+    $tmp = function_exists("gethostname") ? gethostname() : false;
+    if (false !== $tmp)
+	$params["hostname"] = $tmp;
     $tmp = getNetAddress();
     if ($tmp)
 	$params["net_address"] = $tmp;

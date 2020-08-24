@@ -342,6 +342,12 @@ function processRequest($json,$recv)
 	    return buildSuccess("api_version",$api_version);
 	case "get_oem_serial":
 	    return getOemSerial();
+	case "get_host_name":
+	    $res = function_exists("gethostname") ? gethostname() : false;
+	    if (false !== $res)
+		return buildSuccess("hostname",$res);
+	    else
+		return buildError(501,"Cannot retrieve host name");
 	case "get_net_address":
 	    return getNetAddress(getParam($params,"filtered",true));
 	case "get_node_type":
