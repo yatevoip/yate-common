@@ -76,23 +76,31 @@ function postJSON($url,$json,$key = "",$tout = 5)
     return $res;
 }
 
-switch ($_SERVER["argc"]) {
-    case 4:
-	$api_secret = $_SERVER["argv"][3];
-	// fall through
-    case 3:
-	$my_api_url = $_SERVER["argv"][2];
-	// fall through
-    case 2:
-	$notify_url = $_SERVER["argv"][1];
-}
-
+if ($_SERVER["argc"] >= 2)
+    $notify_url = $_SERVER["argv"][1];
+if (($_SERVER["argc"] >= 3) && ("-" != $_SERVER["argv"][2]))
+    $my_api_url = $_SERVER["argv"][2];
+if ($_SERVER["argc"] >= 4)
+    $api_secret = $_SERVER["argv"][3];
 
 if ("" != $notify_url) {
     $params = array(
 	"api_version" => $api_version
     );
-    if ("" != $my_api_url && "-" != $my_api_url)
+    if (true === $my_api_url || "auto" == $my_api_url) {
+	$my_api_url = false;
+	$tmp = parse_url($notify_url,PHP_URL_HOST);
+	if (false !== $tmp) {
+	    $tmp = gethostbyname($tmp);
+	    $s = socket_create(((false !== strpos($tmp,":")) ? AF_INET6 : AF_INET),SOCK_DGRAM,SOL_UDP);
+	    if (socket_connect($s,$tmp,1024)) {
+		if (socket_getsockname($s,$tmp))
+		    $my_api_url = "http://$tmp/api.php";
+		socket_close($s);
+	    }
+	}
+    }
+    if ($my_api_url && ("--" != $my_api_url))
 	$params["api_url"] = $my_api_url;
     $tmp = function_exists("gethostname") ? gethostname() : false;
     if (false !== $tmp)
