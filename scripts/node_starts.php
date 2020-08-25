@@ -27,6 +27,7 @@ $notify_url = "";
 $my_api_url = "";
 $api_secret = "";
 $api_version = "unknown";
+$component_dir = "/usr/share/yate/api/";
 
 @include_once("/var/www/html/api_version.php");
 @include_once("/var/www/html/api_config.php");
@@ -76,6 +77,29 @@ function postJSON($url,$json,$key = "",$tout = 5)
     return $res;
 }
 
+function listNodes()
+{
+    global $component_dir;
+
+    $handle = @opendir($component_dir);
+    if ($handle === false)
+	return null;
+    $nodes = array();
+    while (false !== ($file = readdir($handle))) {
+	if (substr($file,-4) != '.php')
+	    continue;
+	$name = substr($file,0,-4);
+	if (!preg_match('/^([[:alnum:]_-]+)$/',$name))
+	    continue;
+	if (preg_match('/_version$/',$name))
+	    continue;
+	if (is_file("${component_dir}/${file}"))
+	    $nodes[] = $name;
+    }
+    closedir($handle);
+    return $nodes;
+}
+
 if ($_SERVER["argc"] >= 2)
     $notify_url = $_SERVER["argv"][1];
 if (($_SERVER["argc"] >= 3) && ("-" != $_SERVER["argv"][2]))
@@ -107,6 +131,9 @@ if ("" != $notify_url) {
     }
     if ($my_api_url && ("--" != $my_api_url))
 	$params["api_url"] = $my_api_url;
+    $tmp = listNodes();
+    if ($tmp)
+	$params["node_types"] = $tmp;
     $tmp = function_exists("gethostname") ? gethostname() : false;
     if (false !== $tmp)
 	$params["hostname"] = $tmp;
