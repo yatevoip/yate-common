@@ -140,11 +140,15 @@ if ("" != $notify_url) {
     $tmp = getNetAddress();
     if ($tmp)
 	$params["net_address"] = $tmp;
-    $req = array(
-	"request" => "node_starts",
-	"params" => $params
-    );
-    postJSON($notify_url,json_encode($req),$api_secret);
+    if (preg_match('!/api/v[1-9][0-9]*/!',$notify_url))
+	postJSON($notify_url,json_encode($params),$api_secret);
+    else {
+	$req = array(
+	    "request" => "node_starts",
+	    "params" => $params
+	);
+	postJSON($notify_url,json_encode($req),$api_secret);
+    }
 }
 
 /* vi: set ts=8 sw=4 sts=4 noet: */
