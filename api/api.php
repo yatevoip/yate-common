@@ -273,8 +273,9 @@ function serviceState($node,$quiet = false)
 
 function isOperational($obj)
 {
-    return isset($obj["status"]) && isset($obj["status"]["operational"])
-	&& $obj["status"]["operational"];
+    return (isset($obj["status"]) && isset($obj["status"]["operational"])
+	    && $obj["status"]["operational"])
+	|| (isset($obj["code"]) && (0 == $obj["code"]) && isset($obj["stats"]));
 }
 
 function getApiInfo($node, $request)

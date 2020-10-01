@@ -397,14 +397,16 @@ function checkRequest($method = "POST")
 	    }
 	    else if ($yaml && defined('YAML_UTF8_ENCODING')) {
 		header("Content-type: text/x-yaml");
-		$log = $log_status || !(function_exists("isOperational") && isOperational($out));
+		$log = $log_status || (isset($inp["params"]) && count($inp["params"]))
+		    || !(function_exists("isOperational") && isOperational($out));
 		print yaml_emit($out,YAML_UTF8_ENCODING);
 		if ($log)
 		    logRequest($serv,$json_in,($out === null) ? "{ }" : json_encode($out));
 	    }
 	    else {
 		header("Content-type: application/json");
-		$log = $log_status || !(function_exists("isOperational") && isOperational($out));
+		$log = $log_status || (isset($inp["params"]) && count($inp["params"]))
+		    || !(function_exists("isOperational") && isOperational($out));
 		$json_out = ($out === null) ? "{ }" : json_encode($out);
 		print $json_out;
 		if ($log)
