@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # api_asroot.sh
 # This file is part of the YATE Project http://YATE.null.ro
