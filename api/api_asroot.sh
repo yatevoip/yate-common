@@ -33,7 +33,7 @@ else
 fi
 
 ext="/usr/share/yate/api/${2}_asroot.sh"
-if [ -s "$ext" -a -O "$ext" ]; then
+if [ -s "$ext" -a "X0" = X`/usr/bin/stat -c '%u' "$ext" 2>/dev/null` ]; then
     . "$ext"
 fi
 
