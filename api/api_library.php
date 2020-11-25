@@ -155,7 +155,7 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
     return buildError(200,$ev ? "Timeout waiting for Yate response." : "Unexpectedly disconnected from Yate.");
 }
 
-function logRequest($addr,$inp,$out = null)
+function logRequest($addr,$inp,$out = null,$time = 0)
 {
     global $logs_file;
     global $logs_dir;
@@ -170,9 +170,15 @@ function logRequest($addr,$inp,$out = null)
     if ($fh) {
 	if ($out === null)
 	    $out = "";
-	else
+	else if (substr($out,0,1) == "{")
 	    $out = "JsonOut: $out\n";
-	fwrite($fh, "------ " . date("Y-m-d H:i:s") . ", ip=$addr\nJson: $inp\n$out\n");
+	else
+	    $out = "DataOut: $out\n";
+	if ($time)
+	    $time = sprintf("Handled: %0.3f\n",microtime(true) - $time);
+	else
+	    $time = "";
+	fwrite($fh, "------ " . date("Y-m-d H:i:s") . ", ip=$addr\nJson: $inp\n$out$time\n");
 	fclose($fh);
     }
     else
@@ -387,13 +393,30 @@ function checkRequest($method = "POST")
 		    $recv["addr"] = $serv;
 		$recv["prot"] = isset($_SERVER['HTTPS']) ? "HTTPS" : "HTTP";
 	    }
+	    $time = microtime(true);
 	    $out = processRequest($inp,$recv,$json_in);
 	    if (isset($out["_type"])) {
-		header("Content-type: " . $out["_type"]);
-		if (isset($out["_file"]))
+		$type = $out["_type"];
+		header("Content-type: $type");
+		if (isset($out["_file"])) {
 		    header("Content-Disposition: attachment; filename=\"" . $out["_file"] . "\"");
-		print $out["_body"];
-		logRequest($serv,$json_in);
+		    $type .= "; file=" . $out["_file"];
+		}
+		if (isset($out["_body"])) {
+		    print $out["_body"];
+		    $type .= "; length=" . strlen($out["_body"]);
+		}
+		else if (isset($out["_stream"])) {
+		    fpassthru($out["_stream"]);
+		    fclose($out["_stream"]);
+		    $type .= "; stream=handle";
+		}
+		else if (isset($out["_process"])) {
+		    fpassthru($out["_process"]);
+		    pclose($out["_process"]);
+		    $type .= "; stream=process";
+		}
+		logRequest($serv,$json_in,$type,$time);
 	    }
 	    else if ($yaml && defined('YAML_UTF8_ENCODING')) {
 		header("Content-type: text/x-yaml");
@@ -401,7 +424,7 @@ function checkRequest($method = "POST")
 		    || !(function_exists("isOperational") && isOperational($out));
 		print yaml_emit($out,YAML_UTF8_ENCODING);
 		if ($log)
-		    logRequest($serv,$json_in,($out === null) ? "{ }" : json_encode($out));
+		    logRequest($serv,$json_in,($out === null) ? "{ }" : json_encode($out),$time);
 	    }
 	    else {
 		header("Content-type: application/json");
@@ -410,7 +433,7 @@ function checkRequest($method = "POST")
 		$json_out = ($out === null) ? "{ }" : json_encode($out);
 		print $json_out;
 		if ($log)
-		    logRequest($serv,$json_in,$json_out);
+		    logRequest($serv,$json_in,$json_out,$time);
 	    }
 	    exit;
 	}
