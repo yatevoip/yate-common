@@ -5,7 +5,7 @@
  * Server state monitoring library
  *
  * Yet Another Telephony Engine - a fully featured software PBX and IVR
- * Copyright (C) 2019 Null Team
+ * Copyright (C) 2019-2020 Null Team
  *
  * This software is distributed under multiple licenses;
  * see the COPYING file in the main directory for licensing
@@ -400,28 +400,49 @@ function onStatus(msg)
     if (msg.module && (module_name != msg.module))
 	return false;
     var str = "name=" + module_name + ",type=misc,format=" + Server.status_format + ";servers=" + Server.timer_list.length;
-    var first = true;
-    var crtTs = Date.now() / 1000;
+    var avail = 0;
+    var unavail = 0;
     for (var s of Server.timer_list) {
-	if (!s)
-	    continue;
-	var tmp;
-	switch (Server.type) {
-	    case "SIP":
-		tmp =  s.name + "=" + s.uri + "|" + s.available + "|" + s.downCounter + "|" + (crtTs - s.stateTs);
-		break;
-	    case "HTTP":
-		tmp =  s.name + "=" + s.url + "|" + s.available + "|" + s.autoblock + "|" + s.downCounter + "|" + (crtTs - s.stateTs);
-		break;
-	    default:
+	if (s) {
+	    if (true === s.available)
+		avail++;
+	    else if (false === s.available)
+		unavail++;
+	}
+    }
+    str += ",avail=" + avail + ",unavail=" + unavail;
+    if ("HTTP" == Server.type) {
+	var blocked = 0;
+	for (var s of Server.block_list) {
+	    if (s)
+		blocked++;
+	}
+	str += ",blocked=" + blocked;
+    }
+    if (parseBool(msg.details,true)) {
+	var first = true;
+	var crtTs = Date.now() / 1000;
+	for (var s of Server.timer_list) {
+	    if (!s)
 		continue;
+	    var tmp;
+	    switch (Server.type) {
+		case "SIP":
+		    tmp =  s.name + "=" + s.uri + "|" + s.available + "|" + s.downCounter + "|" + (crtTs - s.stateTs);
+		    break;
+		case "HTTP":
+		    tmp =  s.name + "=" + s.url + "|" + s.available + "|" + s.autoblock + "|" + s.downCounter + "|" + (crtTs - s.stateTs);
+		    break;
+		default:
+		    continue;
+	    }
+	    if (first) {
+		str += ";" + tmp;
+		first = false;
+	    }
+	    else
+		str += "," + tmp
 	}
-	if (first) {
-	    str += ";" + tmp;
-	    first = false;
-	}
-	else
-	    str += "," + tmp
     }
     msg.retValue(msg.retValue() + str + "\r\n");
     return !!msg.module;
