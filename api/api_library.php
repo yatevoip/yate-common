@@ -114,6 +114,8 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
 	    $msg->SetParam("ip_port",$recv["port"]);
 	if (isset($recv["prot"]))
 	    $msg->SetParam("protocol",$recv["prot"]);
+	if (isset($recv["client"]))
+	    $msg->SetParam("client",$recv["client"]);
     }
     else if (null !== $recv)
 	$msg->SetParam("received",$recv);
@@ -392,6 +394,8 @@ function checkRequest($method = "POST")
 		else
 		    $recv["addr"] = $serv;
 		$recv["prot"] = isset($_SERVER['HTTPS']) ? "HTTPS" : "HTTP";
+		if (isset($_SERVER['HTTP_USER_AGENT']))
+		    $recv["client"] = $_SERVER['HTTP_USER_AGENT'];
 	    }
 	    $time = microtime(true);
 	    $out = processRequest($inp,$recv,$json_in);
