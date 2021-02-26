@@ -81,6 +81,9 @@ function SIPServer(name)
     this.name = name;
     this.trans_count = sip_trans_count;
     this.uri = "";
+    this.available = "unknown";
+    this.downCounter = 0;
+    this.stateTs = Date.now() / 1000;
 }
 
 SIPServer.prototype = new Server;
@@ -144,6 +147,9 @@ function HTTPServer(name)
     this.timeout = http_timeout;
     this.autoblock = http_autoblock;
     this.url = "";
+    this.available = "unknown";
+    this.downCounter = 0;
+    this.stateTs = Date.now() / 1000;
 }
 
 HTTPServer.handlerInstalled = false;
