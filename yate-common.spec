@@ -156,10 +156,10 @@ fi
 # newer rpmbuild needs these global extended regexps
 %global __requires_exclude pear
 
-%define local_find_requires %{_builddir}/%{name}/local-find-requires
+%define local_find_requires %{_builddir}/yate-common/local-find-requires
 %{__cat} <<EOF >%{local_find_requires}
 #! /bin/sh
-%{__find_requires} | grep -v 'libyate\.php'
+%{__find_requires} | grep -v 'libyate\|yateversn\|php-cli'
 exit 0
 EOF
 chmod +x %{local_find_requires}
