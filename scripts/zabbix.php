@@ -363,9 +363,9 @@ class ZabbixServer
 	if (preg_match('/^[[:space:]]*([^[:space:]]*)[[:space:]]*$/',$server,$m))
 	    $server = $m[1];
 	if (preg_match('/^([[:alnum:]_.-]+):([1-9][0-9]*)$/',$server,$m))
-	    ZabbixServer::$list[] = new ZabbixServer($m[1],1 * $m[2]);
+	    ZabbixServer::$list[] = new ZabbixServer($m[1],(int) $m[2]);
 	else if (preg_match('/^\[([[:xdigit:]:]+)\]:([1-9][0-9]*)$/',$server,$m))
-	    ZabbixServer::$list[] = new ZabbixServer($m[1],1 * $m[2]);
+	    ZabbixServer::$list[] = new ZabbixServer($m[1],(int) $m[2]);
 	else if (preg_match('/^([[:xdigit:]:]+)$/',$server,$m))
 	    ZabbixServer::$list[] = new ZabbixServer($m[1],10051);
 	else if (preg_match('/^([[:alnum:]_.-]+)$/',$server,$m))

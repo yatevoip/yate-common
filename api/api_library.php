@@ -145,8 +145,8 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
 		return buildError(200,"Request '$request' not handled by Yate.");
 	    if ($ev->retval == "-") {
 		$err = $ev->GetValue("error",400);
-		if (is_int(1 * $err))
-		    $err = 1 * $err;
+		if (preg_match('/^[+-]?[0-9]+$/',$err))
+		    $err = (int) $err;
 		return buildError($err,$ev->GetValue("reason"));
 	    }
 	    return buildSuccess($ev->retval,json_decode($ev->GetValue("json"),true));
@@ -334,7 +334,7 @@ function checkRequest($method = "POST")
 					break;
 				    default:
 					if (preg_match('/^-?[1-9][0-9]*$/',$v))
-					    $v = 1 * $v;
+					    $v = (int) $v;
 				}
 				if ("yaml" == $k) {
 				    $yaml = !!$v;
@@ -424,7 +424,8 @@ function checkRequest($method = "POST")
 	    }
 	    else if ($yaml && defined('YAML_UTF8_ENCODING')) {
 		header("Content-type: text/x-yaml");
-		$log = $log_status || (isset($inp["params"]) && count($inp["params"]))
+		$log = $log_status
+		    || (isset($inp["params"]) && is_array($inp["params"]) && count($inp["params"]))
 		    || !(function_exists("isOperational") && isOperational($out));
 		print yaml_emit($out,YAML_UTF8_ENCODING);
 		if ($log)
@@ -432,7 +433,8 @@ function checkRequest($method = "POST")
 	    }
 	    else {
 		header("Content-type: application/json");
-		$log = $log_status || (isset($inp["params"]) && count($inp["params"]))
+		$log = $log_status
+		    || (isset($inp["params"]) && is_array($inp["params"]) && count($inp["params"]))
 		    || !(function_exists("isOperational") && isOperational($out));
 		$json_out = ($out === null) ? "{ }" : json_encode($out);
 		print $json_out;
