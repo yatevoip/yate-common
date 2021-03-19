@@ -160,6 +160,10 @@ function toMSISDN(num,cc,ton,skipCC)
 {
     if (isEmpty(num))
 	return null;
+    // E.164 +CCNNNN
+    if (num.match(%+z.%))
+	return num.substr(1);
+    // If Type Of Number is known
     switch (ton) {
 	case 0x11:
 	case 0x50: // alphanumeric, npi unknown
@@ -173,40 +177,50 @@ function toMSISDN(num,cc,ton,skipCC)
 	    // ISDN national
 	    return cc + num;
     }
-    switch (num) {
-	case %+.%:
-	    // E.164 +CCNNNN
-	    return num.substr(1);
-	case %0000zxxx.%:
-	    // Malformed international number 0000CCNNN
-	case %0010zxxx.%:
-	    // Bolivia 0010CCNNN
-	case %0011zxxx.%:
-	    // Australia default carrier 0011CCNNN
-	    return num.substr(4);
-	case %00zxxx.%:
-	    // ITU 00CCNNN
-	    return num.substr(2);
-	case %000zxxx.%:
-	    // Kenya, Tanzania, Uganda, some malformed numbers 000CCNNN
-	case %011zxxx.%:
-	    // USA 011CCNNN
-	    return num.substr(3);
-	case %0zx.%:
-	    // 0NNN various national
-	    return cc + num.substr(1);
-	case %zx.%:
-	    // NNN various national
-	    if (cc && skipCC) {
-		// Check if someone entered CC without + in front
-		if (num.startsWith(cc))
-		    return num;
-	    }
-	    return cc + num;
-	// Else is not a number or too short to be a MSISDN
+    // Try the national dialing rules
+    var ncc = cc + ":" + num;
+    for (var r of toMSISDN.rules) {
+	var m = ncc.match(r.match);
+	if (!m)
+	    m = num.match(r.match);
+	if (m) {
+	    if (isEmpty(r.repl))
+		return null;
+	    m["cc"] = cc;
+	    return Engine.replaceParams(r.repl,m);
+	}
     }
+    // NNN various national
+    if (cc && num.match(%zx.%)) {
+	if (skipCC) {
+	    // Check if someone entered CC without + in front
+	    if (num.startsWith(cc))
+		return num;
+	}
+	return cc + num;
+    }
+    // Else is not a number or too short to be a MSISDN
     return null;
 }
+
+// Default national dialing rules, may be altered or replaced
+toMSISDN.rules = [
+    { match:%591:0010(zxxx.)%,  repl:"${1}"       }, // 0010CCNNN Bolivia
+    { match:%61:0011(zxxx.)%,   repl:"${1}"       }, // 0011CCNNN Australia default carrier
+    { match:%234:009(zxxx.)%,   repl:"${1}"       }, // 009CCNNN Nigeria
+    { match:%685:0(zx.)%,       repl:"${1}"       }, // 0CCNNN Samoa
+    { match:%53:119(zx.)%,      repl:"${1}"       }, // 119CCNNN Cuba
+    { match:%592:001(zx.)%,     repl:"${1}"       }, // 001CCNNN Guyana
+    { match:%976:001(zx.)%,     repl:"${1}"       }, // 001CCNNN Mongolia
+    { match:%7:8(zx{9})%,       repl:"${cc}${1}"  }, // 8NNN Russia national
+    { match:%00(1zxx.)%,        repl:"${1}"       }, // 001NNN ITU dialing US
+    { match:%00(nxxx.)%,        repl:"${1}"       }, // 00CCNNN ITU to non-US
+    { match:%000(zxxx.)%,       repl:"${1}"       }, // 000CC Kenya, Tanzania, Uganda, malformed
+    { match:%011(nxxx.)%,       repl:"${1}"       }, // 011CCNNN NANP except to NANP itself
+    { match:%010(zxxx.)%,       repl:"${1}"       }, // 010CCNNN Japan
+    { match:%0(zx.)%,           repl:"${cc}${1}"  }, // 0NNN various national
+    { match:%0000(zxxx.)%,      repl:"${1}"       }, // 0000CCNNN malformed international
+];
 
 // Compute the Luhn check digit for IMEI
 function computeLuhn(num,append)
