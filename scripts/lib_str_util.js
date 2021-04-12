@@ -190,8 +190,8 @@ function toMSISDN(num,cc,ton,skipCC)
 	    return Engine.replaceParams(r.repl,m);
 	}
     }
-    // NNN various national
-    if (cc && num.match(%zx.%)) {
+    // NNNNN various national
+    if (cc && num.match(%zxxx.%)) {
 	if (skipCC) {
 	    // Check if someone entered CC without + in front
 	    if (num.startsWith(cc))
