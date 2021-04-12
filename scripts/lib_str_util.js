@@ -212,9 +212,11 @@ toMSISDN.rules = [
     { match:%53:119(zx.)%,      repl:"${1}"       }, // 119CCNNN Cuba
     { match:%592:001(zx.)%,     repl:"${1}"       }, // 001CCNNN Guyana
     { match:%976:001(zx.)%,     repl:"${1}"       }, // 001CCNNN Mongolia
+    { match:%1:1(nx{9})%,       repl:"${cc}${1}"  }, // 1NNN NANP traditional
+    { match:%1:(nx{9})%,        repl:"${cc}${1}"  }, // NNN NANP area code
     { match:%7:8(zx{9})%,       repl:"${cc}${1}"  }, // 8NNN Russia national
-    { match:%00(1zxx.)%,        repl:"${1}"       }, // 001NNN ITU dialing US
-    { match:%00(nxxx.)%,        repl:"${1}"       }, // 00CCNNN ITU to non-US
+    { match:%00(1zxx.)%,        repl:"${1}"       }, // 001NNN ITU dialing NANP
+    { match:%00(nxxx.)%,        repl:"${1}"       }, // 00CCNNN ITU to non-NANP
     { match:%000(zxxx.)%,       repl:"${1}"       }, // 000CC Kenya, Tanzania, Uganda, malformed
     { match:%011(nxxx.)%,       repl:"${1}"       }, // 011CCNNN NANP except to NANP itself
     { match:%010(zxxx.)%,       repl:"${1}"       }, // 010CCNNN Japan
