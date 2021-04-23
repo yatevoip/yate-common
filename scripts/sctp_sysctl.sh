@@ -21,3 +21,7 @@ if ! grep -q -i 'sctp' /etc/sysctl.conf 2>/dev/null; then
 	EOF
     sysctl -p
 fi
+
+if test -d /etc/sysctl.d -a ! -e /etc/sysctl.d/99-sysctl.conf;then
+	ln -s /etc/sysctl.conf /etc/sysctl.d/99-sysctl.conf
+fi
