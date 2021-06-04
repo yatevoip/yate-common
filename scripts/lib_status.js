@@ -173,7 +173,7 @@ function mergeStats(stats,module,details,reset)
 	return;
     if (Array.isArray(module)) {
 	for (var tmp of module)
-	    mergeStats(stats,tmp,details);
+	    mergeStats(stats,tmp,details,reset);
     }
     else {
 	var tmp = retrieveStats(undefined,module,details,reset);
