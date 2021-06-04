@@ -22,7 +22,7 @@
 #require "lib_str_util.js"
 
 // Retrieve engine and module(s) statistics
-function retrieveStats(prefix,module,details)
+function retrieveStats(prefix,module,details,reset)
 {
     var found = false;
     var res = { };
@@ -30,6 +30,7 @@ function retrieveStats(prefix,module,details)
     if (isFilled(module))
 	msg.module = module;
     msg.details = !!details;
+    msg.reset = !!reset;
     msg.dispatch(true);
     msg = msg.retValue();
     msg = msg.split('\n');
@@ -166,7 +167,7 @@ function retrieveStats(prefix,module,details)
 }
 
 // Merge extra submodule statistics
-function mergeStats(stats,module,details)
+function mergeStats(stats,module,details,reset)
 {
     if (!stats)
 	return;
@@ -175,7 +176,7 @@ function mergeStats(stats,module,details)
 	    mergeStats(stats,tmp,details);
     }
     else {
-	var tmp = retrieveStats(undefined,module,details);
+	var tmp = retrieveStats(undefined,module,details,reset);
 	if (tmp) {
 	    for (var i in tmp)
 		stats[i] = tmp[i];

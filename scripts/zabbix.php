@@ -236,6 +236,7 @@ class ZabbixServer
 	    $m->SetParam("type","control");
 	    $m->SetParam("operation","query_stats");
 	    $m->SetParam("details",true);
+	    $m->SetParam("reset",true);
 	    $m->SetParam("server",$this->host);
 	    $m->Dispatch();
 	}
