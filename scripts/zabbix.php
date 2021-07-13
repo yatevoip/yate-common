@@ -57,7 +57,7 @@ class ZabbixServer
 {
     public static $list = array();
     public static $hostname;
-    public static $iotimeout = 5;
+    public static $iotimeout = 10;
     public static $checktime = 600;
 
     private function ZabbixServer($host,$port)
