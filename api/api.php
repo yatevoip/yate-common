@@ -187,7 +187,12 @@ function getNodeLogs($node,$params)
 	    $level = '/^([^<]+ )?<([^ ]+:)?(WARN|STUB|CONF|CRIT|GOON|TEST|FAIL)>/';
 	    break;
 	default:
-	    $level = '/[[:print:]]/';
+	    if (preg_match('/^[[:alnum:]._-]+[:=][[:alnum:]._-]+$/',$level))
+		$level = "/^(.*[^[:alnum:]._-])?$level([^[:alnum:]._-].*)?\$/";
+	    else if (preg_match('/^\^.+\$$/',$level))
+		$level = "/$level/";
+	    else
+		$level = '/[[:print:]]/';
     }
     $lines = getParam($params,"lines",50);
     if ($lines < 10)
@@ -226,6 +231,8 @@ function getNodeLogs($node,$params)
 
     pclose($fh);
 
+    if (getParam($params,"inline"))
+	return buildSuccess("node_logs",$out);
     return array(
 	"_type" => "text/plain",
 	"_body" => implode("\n",$out)
