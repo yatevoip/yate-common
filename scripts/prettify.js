@@ -604,7 +604,7 @@ function onCommand(msg)
 			msg.retValue("Invalid XML\r\n");
 		    return true;
 		case "json":
-		    if (null !== (var json = JSON.parse(m[2])))
+		    if (var json = JSON.parse(m[2]))
 			msg.retValue(JSON.stringify(json,undefined,2) + "\r\n");
 		    else
 			msg.retValue("Invalid JSON\r\n");
