@@ -315,11 +315,21 @@ function checkInt(val,defVal,minVal,maxVal,clamp)
 }
 
 // Format time in milliseconds as seconds with 3 decimal places
-function fmtTime(msec)
+// Format time as hours (hrs is boolean true) or minutes (hrs is boolean false)
+function fmtTime(msec,hrs)
 {
     msec *= 1;
     if (isNaN(msec))
 	return "0";
+    if (true === hrs) {
+	hrs = msec / 3600000;
+	msec = (Math.abs(msec) % 3600000) / 1000;
+	return hrs + ":" + strFix(msec / 60,-2,"0") + ":" + strFix(msec % 60,-2,"0");
+    }
+    if (false === hrs) {
+	msec /= 1000;
+	return (msec / 60) + ":" + strFix((Math.abs(msec) % 60),-2,"0");
+    }
     return (msec / 1000) + "." + strFix((Math.abs(msec) % 1000),-3,"0");
 }
 
