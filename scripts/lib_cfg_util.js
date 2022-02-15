@@ -287,7 +287,7 @@ ScriptConfig.prototype.prepareConfig = function(msg)
 {
     this.jsUser = prepareConf("js-user-config",msg);
     if ("" != msg.received)
-	this.received = "\n\n// Updated: " + msg.received;
+	this.received = "// Updated: " + msg.received;
 };
 
 ScriptConfig.prototype.saveConfig = function()
@@ -341,7 +341,31 @@ ScriptConfig.prototype.buildConfig = function(params)
 	var jsString = r.script;
 	if ("string" != typeof jsString)
 	    return setInvalidParam(this.error,"scripts[" + i + "].script",null,"Must be string",false);
-	this.scripts[file] = r.script + this.received;
+	var hasher = new Hasher("md5");
+	hasher.update(r.script,false);
+	var md5 = hasher.hexDigest();
+
+	var oldContent = File.getContent(file,false,262144);
+	var oldMd5 = "";
+	if ("string" == typeof oldContent) {
+	    if (oldContent.startsWith("// Updated: "))
+		oldContent = oldContent.substr(oldContent.indexOf("\n") + 1);
+	    if (oldContent.startsWith("// Content MD5: ")) {
+		var pos = oldContent.indexOf("\n\n");
+		if (pos > 0) {
+		    oldMd5 = oldContent.substr(16,pos - 16);
+		    oldContent = oldContent.substr(oldContent.indexOf("\n\n") + 2);
+		}
+	    }
+	    if (md5 == oldMd5) // content is the same
+		continue;
+	}
+
+	if (md5 == oldMd5) // content is the same
+	    continue;
+	else
+	    this.scripts[file] = this.received + "\n// Content MD5: " + md5 + "\n\n" + r.script;
+
 	this.jsUser.setValue("scripts",name,file);
     }
 
