@@ -20,7 +20,7 @@
  */
 
 // Make a SQL query, return the holding message or null if the query failed
-function sqlQuery(query,account,async)
+function sqlQuery(query,account,async,results,warn)
 {
     if (true === sqlQuery.debug)
 	Engine.output(query);
@@ -33,12 +33,22 @@ function sqlQuery(query,account,async)
 	async = !!sqlQuery.async;
     m.account = account;
     m.query = query;
+    if (false === results)
+	m.results = false;
+    if ("enqueue" === async) {
+	if (m.enqueue())
+	    return true;
+	if (false !== warn)
+	    Engine.debug(Engine.DebugWarn,"Query failed to be queued on '" + account + "': " + query);
+	return false;
+    }
     if (m.dispatch(async)) {
 	if (!m.error)
 	    return m;
-	Engine.debug(Engine.DebugWarn,"Query " + m.error + " on '" + account + "': " + query);
+	if (false !== warn)
+	    Engine.debug(Engine.DebugWarn,"Query " + m.error + " on '" + account + "': " + query);
     }
-    else
+    else if (false !== warn)
 	Engine.debug(Engine.DebugWarn,"Query not handled by '" + account + "': " + query);
     return null;
 }
@@ -51,7 +61,7 @@ function valQuery(query,async,account,dbFail)
     if (!res)
 	return null;
     if (dbFail) {
-	if (res = res.getResult(0,0))
+	if (null !== (res = res.getResult(0,0)))
 	    return res;
 	return undefined;
     }
