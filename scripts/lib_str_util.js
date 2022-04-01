@@ -333,6 +333,22 @@ function fmtTime(msec,hrs)
     return (msec / 1000) + "." + strFix((Math.abs(msec) % 1000),-3,"0");
 }
 
+// Format date and time: YYYY-MM-DD H:M:S[.mmm]
+function fmtDateTime(sec,msec)
+{
+    sec *= 1;
+    if (isNaN(sec))
+	return "";
+    var d = new Date(sec * 1000);
+    d = d.toJSON();
+    var pos = d.indexOf("T");
+    d = d.substr(0,pos) + " " + d.substr(pos + 1,8);
+    msec *= 1;
+    if (isNaN(msec) || msec < 0)
+	return d;
+    return d + strFix(msec,-3,"0");
+}
+
 // Helper that returns "yes" or "no" for boolean input, optionally pads to specified length
 function yesNo(val,len,pad)
 {
