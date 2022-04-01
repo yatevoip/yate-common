@@ -151,15 +151,18 @@ function prettyDump(lengths,titles,lines,msg,dumpT)
 	for (var j = 0; j < line.length; j++) {
 	    if (trailingSp)
 		s += " " + strFix(line[j],lengths[j]);
-	    else if (!(var tmp = line[j]))
-		spaces += 1 + lengths[j];
-	    else if (tmp.length < lengths[j]) {
-		s += strFix(" ",spaces + 1) + tmp;
-		spaces = lengths[j] - tmp.length;
-	    }
 	    else {
-		s += strFix(" ",spaces + 1) + strFix(tmp,lengths[j]);
-		spaces = 0;
+		var tmp = line[j];
+		if (!tmp.length)
+		    spaces += 1 + lengths[j];
+		else if (tmp.length < lengths[j]) {
+		    s += strFix(" ",spaces + 1) + tmp;
+		    spaces = lengths[j] - tmp.length;
+		}
+		else {
+		    s += strFix(" ",spaces + 1) + strFix(tmp,lengths[j]);
+		    spaces = 0;
+		}
 	    }
 	}
 	if (s)
@@ -528,7 +531,6 @@ function printDbQuery(msg,acc,query)
 		}
 	    }
 	    rVal = Engine.dump_t(rows);
-	    
 	}
 	else {
 	    var lengths = undefined;
