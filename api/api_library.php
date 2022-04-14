@@ -119,7 +119,7 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
     }
     else if (null !== $recv)
 	$msg->SetParam("received",$recv);
-    if ($params) {
+    if ($params || is_array($params)) {
 	$json = json_encode($params);
 	// take into account an average expansion due to escaping
 	$jlen = ceil(1.06 * strlen($json));
