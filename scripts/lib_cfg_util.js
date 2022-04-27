@@ -341,6 +341,8 @@ ScriptConfig.prototype.buildConfig = function(params)
 	var jsString = r.script;
 	if ("string" != typeof jsString)
 	    return setInvalidParam(this.error,"scripts[" + i + "].script",null,"Must be string",false);
+	// always write in js-user-config the name of the script to load
+	this.jsUser.setValue("scripts",name,file);
 	var hasher = new Hasher("md5");
 	hasher.update(r.script,false);
 	var md5 = hasher.hexDigest();
@@ -365,8 +367,6 @@ ScriptConfig.prototype.buildConfig = function(params)
 	    continue;
 	else
 	    this.scripts[file] = this.received + "\n// Content MD5: " + md5 + "\n\n" + r.script;
-
-	this.jsUser.setValue("scripts",name,file);
     }
 
     return true;
