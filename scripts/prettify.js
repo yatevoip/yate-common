@@ -66,6 +66,8 @@ function initialize(first)
     db_cmd = gen.getBoolValue("db_cmd",true);
     db_null = gen.getValue("db_null","<NULL>");
     db_undefined = gen.getValue("db_undefined","");
+    xml_spaces = gen.getIntValue("xml_spaces",2,2,20);
+    json_spaces = gen.getIntValue("json_spaces",2,2,20);
 
     statusFirstColName = {
 	Chan: /^(sip|sig|iax|jingle|h323|cdrbuild)$/,
@@ -589,30 +591,41 @@ function onCommand(msg)
     var line = "" + msg.line;
     if (line) {
 	if (var m = line.match(/^prettify ([^ ]+) (.+)$/)) {
-	    switch (m[1]) {
+	    var cmd = m[1];
+	    var data = m[2];
+	    switch (cmd) {
 		case "status":
 		    return printStatus(msg,m[2]);
 		case "db":
 		    if (db_cmd) {
-			m = m[2];
-			if (m = m.match(/^([^ ]+) (.+)$/))
+			if (m = data.match(/^([^ ]+) (.+)$/))
 			    return printDbQuery(msg,m[1],m[2]);
 		    }
 		    return false;
 		case "xml":
-		    if (var xml = new XML(m[2]))
-			msg.retValue(xml.xmlText(2) + "\r\n");
-		    else
-			msg.retValue("Invalid XML\r\n");
-		    return true;
 		case "json":
-		    if (var json = JSON.parse(m[2]))
-			msg.retValue(JSON.stringify(json,undefined,2) + "\r\n");
+		    if ("xml" == cmd)
+			var spaces = xml_spaces;
+		    else
+			var spaces = json_spaces;
+		    if (m = data.match(/^spaces=([1-9][0-9]*) (.*)$/)) {
+			data = m[2];
+			spaces = 1 * m[1];
+		    }
+		    if ("xml" == cmd) {
+			if (data = new XML(data))
+			    msg.retValue(data.xmlText(spaces) + "\r\n");
+			else
+			    msg.retValue("Invalid XML\r\n");
+			return true;
+		    }
+		    if (data = JSON.parse(data))
+			msg.retValue(JSON.stringify(data,undefined,spaces) + "\r\n");
 		    else
 			msg.retValue("Invalid JSON\r\n");
 		    return true;
 		case "result-status":
-		    return printStatus(msg,m[2],true);
+		    return printStatus(msg,data,true);
 	    }
 	    return false;
 	}
@@ -655,7 +668,7 @@ function onHelp(msg)
 	if (db_cmd)
 	    helpNice += "  prettify db <account> <query>\r\nPrettify database query result\r\n";
 	helpNice +=
-	    "  prettify {xml|json} <str>\r\nPrettify requested data\r\n"
+	    "  prettify {xml|json} [spaces={1-9}[0-9]] <str>\r\nPrettify requested data\r\n"
 	  + "  prettify result-status <str>\r\nPrettify an existing status result\r\n";
     }
     if (!help) {
