@@ -78,18 +78,24 @@ function yateConnect($port,$track = "")
     return $yate_connected;
 }
 
-function yateRequest($port,$type,$request,$params,$recv,$wait = 5,$close = true)
+function yateRequest($port,$type,$request,$params,$recv,$wait = 5,$close = true,$maxReq = null,$name = null)
 {
     global $max_requests;
-    $key = $port ^ 0x79617465; // "yate"
-    $sem = sem_get($key,abs($max_requests),0644,1);
+
+    if (!($maxReq && is_numeric($maxReq)))
+	$maxReq = $max_requests;
+    if (strlen($name) > 0)
+	$key = abs(crc32($name));
+    else
+	$key = $port ^ 0x79617465; // "yate"
+    $sem = sem_get($key,abs($maxReq),0644,1);
     if (false === $sem)
 	return buildError(201,"Semaphore creation failed");
     if (!sem_acquire($sem))
 	return buildError(300,"Semaphore acquisition failed");
     $ret = yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait,$close);
     sem_release($sem);
-    if ($max_requests < 0)
+    if ($maxReq < 0)
 	sem_remove($sem);
     return $ret;
 }
@@ -103,6 +109,8 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
     $msg->SetParam("module","http_api");
     $msg->SetParam("type",$type);
     $msg->SetParam("operation",$request);
+    if ($wait > 0)
+	$msg->SetParam("timeout",1000 * $wait);
 
     if (is_array($recv)) {
 	$msg->SetParam("received",$recv["recv"]);
