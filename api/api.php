@@ -245,6 +245,8 @@ function getNodeCDRs($node,$params)
 	return buildError(401,"Illegal node type");
     $conf = ("yate" == $node) ? "yate" : "yate-$node";
     $lines = getParam($params,"lines",50);
+    if (!preg_match('/^[1-9][0-9]*$/',$lines))
+	return buildError(401,"Illegal lines number");
     if ($lines < 10)
 	$lines = 10;
     else if ($lines > 10000)
