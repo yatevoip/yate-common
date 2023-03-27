@@ -107,7 +107,7 @@ class DbConn
 	if ("mysql" == $this->_dbtype)
 	    $this->_access = array("host" => "","database" => "","user" => "","password" => "");
 	else if ("sqlite" == $this->_dbtype) {
-	    $this->_access = array("database" => "","initialize" => "");
+	    $this->_access = array("database" => "","initialize" => "", "readonly" => "");
 	    $nofail[] = "initialize";
 	}
 	else
@@ -385,10 +385,13 @@ class DbConn
 	}
 	else if ("sqlite" == $this->_dbtype) {
 	    if (!class_exists("SQLite3"))
-		return $this->dbError("init","SqlLite database access not available");
+		return $this->dbError("init","SQLite database access not available");
 	    $db = $this->_access["database"];
 	    try {
-		$this->_connection = new SQLite3($db,SQLITE3_OPEN_READWRITE);
+		if ($this->_access["readonly"])
+		    $this->_connection = new SQLite3($db,SQLITE3_OPEN_READONLY);
+		else
+		    $this->_connection = new SQLite3($db,SQLITE3_OPEN_READWRITE);
 	    }
 	    catch (Exception $e) {
 		$this->_connection = false;
