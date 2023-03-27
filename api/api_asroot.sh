@@ -19,6 +19,15 @@
 
 # Helper script for several API requests that need root access
 
+if [ "$1" = "conntrack-list-nat" ]; then
+    if [ -n "$3" ]; then
+	/usr/sbin/conntrack -L -p $2 -n | grep $3
+    else
+	/usr/sbin/conntrack -L -p $2 -n
+    fi
+    exit $?
+fi
+
 if (echo "X$2" | /bin/grep -q -v '^X[[:alnum:]_.-]\+$') 2>/dev/null; then
     echo "Invalid node name" >&2
     exit 1
