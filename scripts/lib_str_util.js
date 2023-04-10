@@ -134,15 +134,15 @@ function cutAngles(str)
 // Parse a string as boolean value
 function parseBool(str,defVal)
 {
-    switch (str) {
-	case false:
+    if (true === str || false === str)
+	return str;
+    switch ("" + str) {
 	case "false":
 	case "no":
 	case "off":
 	case "disable":
 	case "f":
 	    return false;
-	case true:
 	case "true":
 	case "yes":
 	case "on":
