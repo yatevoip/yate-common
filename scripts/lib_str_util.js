@@ -381,6 +381,21 @@ function oneCompletion(msg,str,part)
     return true;
 }
 
+// Perform command line completion from object properties or array entries
+function multiCompletion(msg,obj,part)
+{
+    var ok = false;
+    if (Array.isArray(obj)) {
+	for (var s of obj)
+	    ok = oneCompletion(msg,s,part) || ok;
+    }
+    else if (obj && "object" == typeof obj) {
+	for (var s in obj)
+	    ok = oneCompletion(msg,s,part) || ok;
+    }
+    return ok;
+}
+
 // Prepare next page output parameters in command message
 function setPaging(msg,length,header)
 {
