@@ -5,7 +5,7 @@
  * Database helper functions library for Javascript
  *
  * Yet Another Telephony Engine - a fully featured software PBX and IVR
- * Copyright (C) 2012-2016 Null Team
+ * Copyright (C) 2012-2023 Null Team
  *
  * This software is distributed under multiple licenses;
  * see the COPYING file in the main directory for licensing

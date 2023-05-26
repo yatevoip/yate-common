@@ -5,7 +5,7 @@
  * Status retrieval and parsing utility functions library for Javascript
  *
  * Yet Another Telephony Engine - a fully featured software PBX and IVR
- * Copyright (C) 2017 Null Team
+ * Copyright (C) 2017-2023 Null Team
  *
  * This software is distributed under multiple licenses;
  * see the COPYING file in the main directory for licensing
