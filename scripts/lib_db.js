@@ -20,38 +20,88 @@
  */
 
 // Make a SQL query, return the holding message or null if the query failed
-function sqlQuery(query,account,async,results,warn)
+function sqlQuery(query,account,async,results,warn,msgParams)
 {
-    if (true === sqlQuery.debug)
-	Engine.output(query);
-    else if ((sqlQuery.debug > 0) && (sqlQuery.debug <= 10))
-	Engine.debug(sqlQuery.debug,query);
-    var m = new Message("database");
     if (undefined === account)
 	account = dbacc;
-    if (undefined === async)
-	async = !!sqlQuery.async;
+    if (var dbg = sqlQuery.debug) {
+	if (true === dbg) {
+	    if (sqlQuery.debug_account)
+		Engine.output("[" + account + "]",query);
+	    else
+		Engine.output(query);
+	}
+	else if ((dbg > 0) && (dbg <= 10)) {
+	    if (sqlQuery.debug_account)
+		Engine.debug(dbg,"[" + account + "]",query);
+	    else
+		Engine.debug(dbg,query);
+	}
+    }
+    if (var perf = sqlQuery.perf)
+	perf.inc("db_query_total");
+    var m = new Message("database",false,msgParams);
     m.account = account;
     m.query = query;
     if (false === results)
 	m.results = false;
+    if (undefined === async)
+	async = !!sqlQuery.async;
     if ("enqueue" === async) {
 	if (m.enqueue())
 	    return true;
 	if (false !== warn)
 	    Engine.debug(Engine.DebugWarn,"Query failed to be queued on '" + account + "': " + query);
+	if (perf) {
+	    perf.inc("db_query_failed");
+	    perf.inc("db_query_failed_enqueue");
+	}
 	return false;
     }
     if (m.dispatch(async)) {
 	if (!m.error)
 	    return m;
-	if (false !== warn)
-	    Engine.debug(Engine.DebugWarn,"Query " + m.error + " on '" + account + "': " + query);
+	var e = m.error;
     }
-    else if (false !== warn)
-	Engine.debug(Engine.DebugWarn,"Query not handled by '" + account + "': " + query);
+    else
+	var e = "not-handled";
+    if (false !== warn)
+	Engine.debug(Engine.DebugWarn,"Query error '" + e + "' on '" + account + "': " + query);
+    if (perf) {
+	perf.inc("db_query_failed");
+	if ("failure" != e) {
+	    if (!e.match(/[ |=;,]/))
+		perf.inc("db_query_failed_" + e);
+	}
+    }
     return null;
 }
+sqlQuery.initialize = function(params,perfVars)
+{
+    if (params.getIntValue) {
+	// Load from config
+	var tmp = params.getIntValue("debug_queries");
+	if (tmp <= 0)
+	    sqlQuery.debug = params.getBoolValue("debug_queries");
+	else if (tmp > 10)
+	    sqlQuery.debug = 10;
+	else
+	    sqlQuery.debug = tmp;
+	sqlQuery.debug_account = params.getBoolValue("debug_queries_account");
+    }
+    else if (params.getVars) {
+	// Load from shared vars
+	params = params.getVars({autonum:true,autobool:true});
+	sqlQuery.debug = params.debug_queries;
+	sqlQuery.debug_account = params.debug_queries_account;
+    }
+    if (perfVars) {
+	if ("string" == typeof perfVars)
+	    sqlQuery.perf = new Engine.SharedVars(perfVars);
+    }
+    else if (sqlQuery.perf_vars_name)
+	sqlQuery.perf = new Engine.SharedVars(sqlQuery.perf_vars_name);
+};
 
 // Make a SQL query, return 1st column in 1st row, null if query failed or returned no records
 // Return undefined if dbFail is set and database query succeeds with empty result
