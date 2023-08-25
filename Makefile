@@ -7,7 +7,8 @@ RELEASE := $(shell sed -n 's/^%define[[:space:]]\+buildnum[[:space:]]\+//p' $(PK
 TARNAME := $(PKGNAME)-$(VERSION)-$(RELEASE)
 SRPMDIR := $(HOME)/rpmbuild/SRPMS
 GITTAG  := $(shell LANG=C LC_MESSAGES=C git tag 2>/dev/null | tail -n 1)
-GIT_HASH := $(shell LANG=C LC_MESSAGES=C git rev-list -n1 HEAD 2>/dev/null)
+GIT_HASH := $(shell LANG=C LC_MESSAGES=C git rev-list -n1 HEAD 2>tmp.txt)
+GIT_ERR := $(shell LANG=C LC_MESSAGES=C cat tmp.txt 2>/dev/null; rm -f tmp.txt 2>/dev/null )
 SUFFIX  :=
 RPMOPT  :=
 
@@ -25,17 +26,17 @@ srpm: check-gittag tarball
 	rpmbuild -ta --define 'tarname $(TARNAME)' --define 'revision $(if $(SUFFIX),$(SUFFIX),%{nil})' $(RPMOPT) tarballs/$(TARNAME).tar.gz
 
 # build packages from GIT HEAD
-rpm-head: tarball
+rpm-head: check-githash tarball
 	rpmbuild -tb --define 'tarname $(TARNAME)' --define 'revision _$(GIT_HASH)git' $(RPMOPT) tarballs/$(TARNAME).tar.gz
 
-srpm-head: tarball
+srpm-head: check-githash tarball
 	rpmbuild -ta --define 'tarname $(TARNAME)' --define 'revision _$(GIT_HASH)git' $(RPMOPT) tarballs/$(TARNAME).tar.gz
 
 # build packages with tagged version
 srpm-git: check-gittag tarball
 	rpmbuild -ta --define 'tarname $(TARNAME)' --define 'revision _t$(GITTAG)$(SUFFIX)' $(RPMOPT) tarballs/$(TARNAME).tar.gz
 
-check-gittag:
+check-gittag: check-githash
 	@tag_hash=""; \
 	if [ "" != "$(GITTAG)" ]; then \
 	    tag_hash=`LANG=C LC_MESSAGES=C git rev-list -n1 $(GITTAG) 2>/dev/null`; \
@@ -45,6 +46,13 @@ check-gittag:
 	fi; \
 	if [ "x$(GIT_HASH)" != "x$$tag_hash" ]; then \
 	    echo "Current commit hash $(GIT_HASH) different from expected hash for tag $(GITTAG) ($$tag_hash)"; \
+	    exit 1; \
+	fi;
+
+check-githash:
+	@if [ "x" = "x$(GIT_HASH)" ]; then \
+	    echo "Could not obtain last GIT commit hash. GIT Error:"; \
+	    echo "$(GIT_ERR)"; \
 	    exit 1; \
 	fi;
 
