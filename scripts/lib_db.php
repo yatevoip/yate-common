@@ -103,12 +103,12 @@ class DbConn
 	    }
 	}
 
-	$nofail = array();
+	$failMissing = array();
 	if ("mysql" == $this->_dbtype)
 	    $this->_access = array("host" => "","database" => "","user" => "","password" => "");
 	else if ("sqlite" == $this->_dbtype) {
 	    $this->_access = array("database" => "","initialize" => "", "readonly" => "");
-	    $nofail[] = "initialize";
+	    $failMissing = array("database");
 	}
 	else
 	    return;
@@ -116,7 +116,7 @@ class DbConn
 	    $tmp = "$paramsPref$n";
 	    if (isset($params[$tmp]))
 		$this->_access[$n] = $params[$tmp];
-	    else if (!in_array($n,$nofail)) {
+	    else if (in_array($n,$failMissing)) {
 		$this->_access = NULL;
 		break;
 	    }
@@ -272,7 +272,7 @@ class DbConn
      */
     function queryNoResult($query,$oper = NULL,$failRetApiErr = false)
     {
-	$res = (false !== $this->query($query,$oper,NULL,false,true));
+	$res = (NULL === $this->query($query,$oper,NULL,false,true));
 	return $failRetApiErr ? ($res ? NULL : $this->lastErrorApi()) : $res;
     }
 
