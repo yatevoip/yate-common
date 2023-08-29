@@ -195,6 +195,21 @@ function logRequest($addr,$inp,$out = null,$time = 0)
 	print "\n// Can't write to $file";
 }
 
+/**
+ * Convert objects to associative arrays
+ * Recursively apply function to array items
+ * @param $d Input data
+ * @return Array if given parameter is array or object, given parameter otherwise
+ */
+function apiStdToArray($d)
+{
+    if (is_object($d))
+	$d = get_object_vars($d);
+    if (is_array($d))
+	return array_map(__FUNCTION__, $d);
+    return $d;
+}
+
 function checkRequest($method = "POST")
 {
     global $cors_origin,$log_status,$api_secret;
