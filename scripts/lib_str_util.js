@@ -382,14 +382,21 @@ function oneCompletion(msg,str,part)
 }
 
 // Perform command line completion from object properties or array entries
-function multiCompletion(msg,obj,part)
+// 'key' present Perform object
+function multiCompletion(msg,obj,part,key)
 {
+    if (!(obj && "object" == typeof obj))
+	return;
     var ok = false;
-    if (Array.isArray(obj)) {
+    if (key) {
+	for (var s of obj)
+	    ok = oneCompletion(msg,s[key],part) || ok;
+    }
+    else if (Array.isArray(obj)) {
 	for (var s of obj)
 	    ok = oneCompletion(msg,s,part) || ok;
     }
-    else if (obj && "object" == typeof obj) {
+    else {
 	for (var s in obj)
 	    ok = oneCompletion(msg,s,part) || ok;
     }
