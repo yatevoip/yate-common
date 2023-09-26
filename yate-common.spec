@@ -89,6 +89,20 @@ based products.
 
 
 %post
+# add protection for other product installation that might restart 
+# services that we need running
+count=0
+while [ -f "%{_tmppath}/yate-installing" ]
+do
+    if [ "x$count" = "x0" ]; then
+       prod=`cat "%{_tmppath}/yate-installing" 2>/dev/null`
+       echo "Waiting to run postinstall for %{name} after $prod finishes installing."
+    fi
+    count=$((count+1))
+    sleep 1
+done
+echo "%{name}" > "%{_tmppath}/yate-installing" 2>/dev/null
+
 mkdir -p /var/log/json_api
 chown -R apache.apache /var/log/json_api
 
@@ -113,6 +127,7 @@ if [ "X$1" = "X1" ]; then
     /sbin/service httpd restart
 %endif
 fi
+rm -f %{_tmppath}/yate-installing 2>/dev/null
 
 
 %package start
