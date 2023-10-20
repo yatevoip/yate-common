@@ -1,7 +1,7 @@
 [
     {
         "name": "set_ss7_node",
-        "description": "This request is used to configure the SS7 settings for various equipment (ex: YateHSS\/HLR,YateSMSC, YateUCN etc.).",
+        "description": "This request is used to configure the SS7 settings for various equipment (ex: YateHSS/HLR,YateSMSC, YateUCN etc.).",
         "requests": [
             {
                 "request": "set_ss7_node",
@@ -10,8 +10,8 @@
                     "comment__local": "Information about the local node (the actual equipment that you are configuring). . The information about the local node is organized in 'common' object (common settings for the network, but also equipment specific information).",
                     "local": {
                         "common": {
-                            "dialect": "ITU\/ANSI",
-                            "netindicator": "national\/reservednational\/international",
+                            "dialect": "ITU/ANSI",
+                            "netindicator": "national/reservednational/international",
                             "pointcode": "Local pointcode, integer representation, range depends on dialect.",
                             "gt": "Array of local GT. The first element is the GT we are sending from.",
                             "hlr": "Optional, HLR number (GT) returned in Update Location.",
@@ -24,8 +24,8 @@
                     "comment__linksets": "Configures the linksets and links to the STP",
                     "linksets": [
                         {
-                            "type": "M2PA\/M3UA",
-                            "comment__type": "For M3UA pointcode is optional. Either pointcode and\/or route must be present",
+                            "type": "M2PA/M3UA",
+                            "comment__type": "For M3UA pointcode is optional. Either pointcode and/or route must be present",
                             "pointcode": "Adjacent point code, integer representation, range depends on dialect",
                             "route": "Optional array of PCs in integer representation to route through this STP. The string 'default' may be used as point code to indicate a default route. E.g. route: [23, 'default']",
                             "comment__links": "M2PA: list of links. M3UA: 1 entry with connection data",
@@ -51,7 +51,7 @@
                             ],
                             "aspid": "M3UA only. Number. Optional ASP identifier (unsigned 32 bit)",
                             "contexts": "M3UA only. Number. Optional Array of  routing context numbers (unsigned 32 bit)",
-                            "traffic": "M3UA only. String. Optional traffic type. Possible values: unused\/override\/loadshare\/broadcast",
+                            "traffic": "M3UA only. String. Optional traffic type. Possible values: unused/override/loadshare/broadcast",
                             "network_appearance": "M3UA only. Number. Optional network appearance (unsigned 32 bit)"
                         }
                     ],
@@ -78,11 +78,11 @@
             },
             {
                 "code": 402,
-                "message": "Missing all parameters.\/ Missing 'linkset type' parameter."
+                "message": "Missing all parameters./ Missing 'linkset type' parameter."
             },
             {
                 "code": 501,
-                "message": "Locked config file 'conf_file_name'. \/ Failed to save config file 'conf_file_name'. \/ One or more of the config files is locked."
+                "message": "Locked config file 'conf_file_name'. / Failed to save config file 'conf_file_name'. / One or more of the config files is locked."
             }
         ],
         "examples": [
@@ -159,7 +159,7 @@
     },
     {
         "name": "set_diam_node",
-        "description": "This request is used to configure the diameter settings for various equipment (ex: YateHSS\/HLR, YateUCN etc.).",
+        "description": "This request is used to configure the diameter settings for various equipment (ex: YateHSS/HLR, YateUCN etc.).",
         "requests": [
             {
                 "request": "set_diam_node",
@@ -174,7 +174,7 @@
                     "comment__identities": "Configure local nodes",
                     "identities": [
                         {
-                            "node": "Node identity (realm(domain_name)\/host(host_name)). Ex: example.com\/hss.example.com",
+                            "node": "Node identity (realm(domain_name)/host(host_name)). Ex: example.com/hss.example.com",
                             "role": "String. Optional name of special role of this node",
                             "default_priority": "Number. Optional priority to use this node if no other matches. Default 0 (disabled).",
                             "default_realm_priority": "Number. Optional priority to use this node if only realm matches. Default 0 (disabled)."
@@ -201,13 +201,13 @@
                             "accept": [
                                 {
                                     "node": "Node to accept, must be a configured identity",
-                                    "accept_node": "Optional remote node(s) to accept. String: RegExp to match node(s) to accept \/ Array: Only remote nodes matching it will be accepted. If present and not empty only listed remote nodes will be accepted.",
+                                    "accept_node": "Optional remote node(s) to accept. String: RegExp to match node(s) to accept / Array: Only remote nodes matching it will be accepted. If present and not empty only listed remote nodes will be accepted.",
                                     "default_route": "Number. Optional default route priority for accepted connections"
                                 }
                             ]
                         }
                     ],
-                    "comment__connections": "Information about the local node (the actual YateHSS\/HLR server that you are configuring). The information about the local node is organized in 'common' object (settings for the network, but also equipment specific information).",
+                    "comment__connections": "Information about the local node (the actual YateHSS/HLR server that you are configuring). The information about the local node is organized in 'common' object (settings for the network, but also equipment specific information).",
                     "connections": [
                         {
                             "node": "Local identity. The name of a node configured in identities.",
@@ -242,7 +242,7 @@
         "errors": [
             {
                 "code": 401,
-                "message": "No connection or listener configured. \/ Invalid 'accept node' param value 'provided_value' - not configured."
+                "message": "No connection or listener configured. / Invalid 'accept node' param value 'provided_value' - not configured."
             },
             {
                 "code": 402,
@@ -258,7 +258,7 @@
                     "params": {
                         "identities": [
                             {
-                                "node": "epc.mnc008.mcc246.3gppnetwork.org\/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
+                                "node": "epc.mnc008.mcc246.3gppnetwork.org/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
                                 "default_priority": 0,
                                 "default_realm_priority": 0
                             }
@@ -278,7 +278,7 @@
                         ],
                         "connections": [
                             {
-                                "node": "epc.mnc008.mcc246.3gppnetwork.org\/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
+                                "node": "epc.mnc008.mcc246.3gppnetwork.org/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
                                 "local_ip": [
                                     "192.168.50.235"
                                 ],
@@ -294,7 +294,7 @@
                                 }
                             },
                             {
-                                "node": "epc.mnc008.mcc246.3gppnetwork.org\/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
+                                "node": "epc.mnc008.mcc246.3gppnetwork.org/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
                                 "local_ip": [
                                     "192.168.50.237"
                                 ],
@@ -310,7 +310,7 @@
                                 }
                             },
                             {
-                                "node": "epc.mnc008.mcc246.3gppnetwork.org\/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
+                                "node": "epc.mnc008.mcc246.3gppnetwork.org/YateHSS.epc.mnc008.mcc246.3gppnetwork.org",
                                 "local_ip": [
                                     "192.168.50.221"
                                 ],
@@ -336,8 +336,37 @@
         ]
     },
     {
+        "name": "set_network_nodes",
+        "description": "This request is used to set (notify) network nodes related information.",
+        "requests": [
+            {
+                "request": "set_network_nodes",
+                "node": "The node to configure. E.g. ucn",
+                "params": {
+                    "node_name": "String, required. The name of the node beeing configured.",
+                    "comment__nodes": "Object. Network nodes. Key: node name.",
+                    "nodes": {
+                        "<NODE-NAME>": {
+                            "node": "String, required. Node type. E.g. ucn.",
+                            "api_ip": "String, IPv4 or IPv6, optional. API interface IP.",
+                            "api_url": "String, optional. API URL (e.g. http://<ip>/api.php).",
+                            "comment": "Node specific parameters may be present."
+                        }
+                    }
+                }
+            }
+        ],
+        "responses": [
+            {
+                "code": 0,
+                "node": null
+            }
+        ],
+        "errors": []
+    },
+    {
         "name": "set_regexroute",
-        "description": "This request is used to configure the regexroute settings for various equipment (ex: YateHSS\/HLR, YateUCN etc.).",
+        "description": "This request is used to configure the regexroute settings for various equipment (ex: YateHSS/HLR, YateUCN etc.).",
         "requests": [
             {
                 "request": "set_regexroute",
@@ -379,7 +408,7 @@
                         "rules": [
                             {
                                 "name": "route_msrn",
-                                "rules": "[default]\n${roaming}^80080000=sip\/sip:+${roaming}@127.0.0.1;oconnection_id=gmsc\n${roaming}^80080111=sip\/sip:+${roaming}@127.0.0.2;oconnection_id=gmsc\n${roaming}^80080002=sip\/sip:+${roaming}@127.0.0.3;oconnection_id=gmsc"
+                                "rules": "[default]\n${roaming}^80080000=sip/sip:+${roaming}@127.0.0.1;oconnection_id=gmsc\n${roaming}^80080111=sip/sip:+${roaming}@127.0.0.2;oconnection_id=gmsc\n${roaming}^80080002=sip/sip:+${roaming}@127.0.0.3;oconnection_id=gmsc"
                             }
                         ]
                     }
@@ -393,7 +422,7 @@
     },
     {
         "name": "set_javascript",
-        "description": "This request is used to configure the javascript scripts for various equipment (ex: YateHSS\/HLR, YateUCN etc.).",
+        "description": "This request is used to configure the javascript scripts for various equipment (ex: YateHSS/HLR, YateUCN etc.).",
         "requests": [
             {
                 "request": "set_javascript",
@@ -492,11 +521,11 @@
         "errors": [
             {
                 "code": 404,
-                "message": "File not found: \/etc\/sysconfig\/oem"
+                "message": "File not found: /etc/sysconfig/oem"
             },
             {
                 "code": 501,
-                "message": "Cannot open for reading: \/etc\/sysconfig\/oem"
+                "message": "Cannot open for reading: /etc/sysconfig/oem"
             }
         ],
         "examples": [
@@ -540,7 +569,7 @@
                 },
                 "response": {
                     "code": 0,
-                    "hostname":"localhost"
+                    "hostname": "localhost"
                 }
             }
         ]
@@ -1086,7 +1115,7 @@
         ],
         "responses": [
             {
-                "HTTP Content-Type": "text\/plain",
+                "HTTP Content-Type": "text/plain",
                 "HTTP Body": "Filtered log lines of the node"
             }
         ],
@@ -1097,11 +1126,11 @@
             },
             {
                 "code": 404,
-                "message": "Log file not found: \/var\/log\/yate-NODE"
+                "message": "Log file not found: /var/log/yate-NODE"
             },
             {
                 "code": 501,
-                "message": "Cannot retrieve logs from: \/var\/log\/yate-NODE"
+                "message": "Cannot retrieve logs from: /var/log/yate-NODE"
             }
         ],
         "examples": [
@@ -1115,7 +1144,7 @@
                     }
                 },
                 "response": {
-                    "HTTP Content-Type": "text\/plain",
+                    "HTTP Content-Type": "text/plain",
                     "HTTP Body": "Filtered log lines of the node"
                 }
             }
@@ -1139,11 +1168,11 @@
         ],
         "responses": [
             {
-                "HTTP Content-Type": "application\/octet-stream",
+                "HTTP Content-Type": "application/octet-stream",
                 "HTTP Body": "Requested config file content"
             },
             {
-                "HTTP Content-Type": "application\/octet-stream",
+                "HTTP Content-Type": "application/octet-stream",
                 "HTTP Body": "Archive of type tar.gz of config files in the node config directory"
             }
         ],
@@ -1154,15 +1183,15 @@
             },
             {
                 "code": 404,
-                "message": "Directory not found: \/etc\/yate\/NODE"
+                "message": "Directory not found: /etc/yate/NODE"
             },
             {
                 "code": 404,
-                "message": "File not found: \/etc\/yate\/NODE\/FILE"
+                "message": "File not found: /etc/yate/NODE/FILE"
             },
             {
                 "code": 501,
-                "message": "Cannot get configuration from: \/etc\/yate\/NODE\/FILE"
+                "message": "Cannot get configuration from: /etc/yate/NODE/FILE"
             }
         ],
         "examples": [
@@ -1173,7 +1202,7 @@
                     "node": "hss"
                 },
                 "response": {
-                    "HTTP Content-Type": "application\/octet-stream",
+                    "HTTP Content-Type": "application/octet-stream",
                     "HTTP Body": "Archive of type tar.gz of config files in the node config directory"
                 }
             },
@@ -1187,7 +1216,7 @@
                     }
                 },
                 "response": {
-                    "HTTP Content-Type": "application\/octet-stream",
+                    "HTTP Content-Type": "application/octet-stream",
                     "HTTP Body": "Requested config file content"
                 }
             }
