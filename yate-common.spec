@@ -21,6 +21,8 @@
 %define systemd %(test -x /usr/bin/systemctl && echo 1 || echo 0)
 %{!?_unitdir:%define _unitdir /usr/lib/systemd/system}
 %{!?tarname:%define tarname %{name}-%{version}-%{buildnum}}
+# ostype will help better differentiate OS-es - we have Mageia (7 and 8) and CentOS (7 and 9)
+%define ostype %(awk '{for(i=1;i<=NF;i++)if($i=="release")print $1,substr($(i+1),1,1)}' /etc/redhat-release)
 
 %define buildnum 1
 
@@ -51,7 +53,12 @@ Requires:	sudo
 Requires:	net-tools
 Requires:	webserver
 %if "%{?rhel}%{?fedora}" != ""
+%if "%{ostype}" == "CentOS 7"
 Requires:	mod_php
+%else
+# On CentOS >=8 - mod_php has been replced by php-fpm
+Requires:	php-fpm
+%endif
 %else
 Requires:	apache-mod_php
 %endif
