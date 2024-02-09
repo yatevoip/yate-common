@@ -60,7 +60,7 @@ class ZabbixServer
     public static $iotimeout = 10;
     public static $checktime = 600;
 
-    private function ZabbixServer($host,$port)
+    private function __construct($host,$port)
     {
 	$this->host = $host;
 	$this->addr = (false !== strpos($host,":")) ? "[$host]:$port" : "$host:$port";
