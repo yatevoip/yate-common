@@ -22,8 +22,12 @@
 // Make a SQL query, return the holding message or null if the query failed
 function sqlQuery(query,account,async,results,warn,msgParams)
 {
-    if (undefined === account)
-	account = dbacc;
+    if (undefined === account) {
+	if (undefined === sqlQuery.account)
+	    account = dbacc;
+	else
+	    account = sqlQuery.account;
+    }
     if (var dbg = sqlQuery.debug) {
 	if (true === dbg) {
 	    if (sqlQuery.debug_account)
@@ -76,31 +80,71 @@ function sqlQuery(query,account,async,results,warn,msgParams)
     }
     return null;
 }
-sqlQuery.initialize = function(params,perfVars)
+sqlQuery.initialize = function(params,perfVars,first,defAcct)
 {
     if (params.getIntValue) {
-	// Load from config
-	var tmp = params.getIntValue("debug_queries");
-	if (tmp <= 0)
-	    sqlQuery.debug = params.getBoolValue("debug_queries");
-	else if (tmp > 10)
-	    sqlQuery.debug = 10;
+	if (sqlQuery.sharedVars.set)
+	    var save = sqlQuery.sharedVars;
 	else
-	    sqlQuery.debug = tmp;
-	sqlQuery.debug_account = params.getBoolValue("debug_queries_account");
+	    var save = undefined;
+	// Load from config
+	if (first) {
+	    if (undefined !== defAcct) {
+		sqlQuery.account = params.getValue("dbacc",defAcct);
+		if (save)
+		    save.set("dbacc",sqlQuery.account);
+	    }
+	    sqlQuery.setDebug(params.getValue("debug_queries"));
+	    sqlQuery.debug_account = params.getBoolValue("debug_queries_account");
+	    if (save)
+		save.set("debug_queries_account",sqlQuery.debug_account);
+	}
+	sqlQuery.async = params.getBoolValue("db_async",true);
+	if (save)
+	    save.set("db_async",sqlQuery.async);
     }
     else if (params.getVars) {
-	// Load from shared vars
+	// Load from shared vars. Assume first init
 	params = params.getVars({autonum:true,autobool:true});
-	sqlQuery.debug = params.debug_queries;
+	if (params.dbacc)
+	    sqlQuery.account = params.dbacc;
+	if (undefined === params.db_async)
+	    sqlQuery.async = true;
+	else
+	    sqlQuery.async = !!params.db_async;
+	sqlQuery.setDebug(params.debug_queries);
 	sqlQuery.debug_account = params.debug_queries_account;
     }
-    if (perfVars) {
-	if ("string" == typeof perfVars)
-	    sqlQuery.perf = new Engine.SharedVars(perfVars);
+    if (!sqlQuery.perf) {
+	if (perfVars) {
+	    if ("string" == typeof perfVars)
+		sqlQuery.perf = new Engine.SharedVars(perfVars);
+	    else if (perfVars.getVars)
+		sqlQuery.perf = perfVars;
+	}
+	else if (sqlQuery.perf_vars_name)
+	    sqlQuery.perf = new Engine.SharedVars(sqlQuery.perf_vars_name);
     }
-    else if (sqlQuery.perf_vars_name)
-	sqlQuery.perf = new Engine.SharedVars(sqlQuery.perf_vars_name);
+};
+sqlQuery.setDebug = function(val)
+{
+    val = parseBool(val,val);
+    switch (val) {
+	case true:
+	case false:
+	    break;
+	default:
+	    val = 1 * val;
+	    if (isNaN(val) || val <= 0)
+		val = false;
+	    else if (val > 10)
+		val = 10;
+    }
+    if (val === sqlQuery.debug)
+	return;
+    sqlQuery.debug = val;
+    if (sqlQuery.sharedVars.set)
+	sqlQuery.sharedVars.set("debug_queries",sqlQuery.debug);
 };
 
 // Make a SQL query, return 1st column in 1st row, null if query failed or returned no records
