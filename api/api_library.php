@@ -62,6 +62,116 @@ function buildError($code,$message)
     return $res;
 }
 
+// Retrieve a string parameter
+// $defVal: null: parameter is required
+function getParamStr(&$params,$name,$defVal = "",$dict = null,$doTrim = true)
+{
+    $str = getParam($params,$name);
+    if (null === $str) {
+	if (null === $defVal)
+	    return buildError(402,"Missing '$name' parameter.");
+	return $defVal;
+    }
+    if (!is_string($str))
+	return buildError(401,"Invalid '$name' parameter value - not a string.");
+    if (is_array($dict) && !in_array($str,$dict))
+	return buildError(402,"Unsupported '$name' parameter value '$str'.");
+    return $doTrim ? trim($str) : $str;
+}
+
+// Retrieve an IP parameter
+// $defVal: null: parameter is required
+function getParamIp(&$params,$name,$v4 = true,$v6 = true,$defVal = null,$allAllowed = false)
+{
+    $ip = getParamStr($params,$name,$defVal);
+    // Error ?
+    if (is_array($ip))
+	return $ip;
+    if (!$ip) {
+	if (null === $defVal)
+	    return buildError(402,"Empty '$name' parameter.");
+	return $defVal;
+    }
+    if ($v4) {
+	$ok = ip2long($ip);
+	if (is_numeric($ok)) {
+	    return ($allAllowed || $ok) ? $ip
+		: buildError(401,"Invalid '$name' parameter value '$ip' - all addresses not allowed.");
+	}
+    }
+    if ($v6) {
+	if ("::" == $ip) {
+	    return $allAllowed ? $ip
+		: buildError(401,"Invalid '$name' parameter value '$ip' - all addresses not allowed.");
+	}
+	if (preg_match('/^[[:xdigit:]]{1,4}:([[:xdigit:]:]+)?$/',$ip))
+	    return $ip;
+    }
+    if ($v4 && $v6)
+	return buildError(401,"Invalid '$name' parameter value '$ip' - not an IP address.");
+    if ($v4)
+	return buildError(401,"Invalid '$name' parameter value '$ip' - not an IPv4 address.");
+    return buildError(401,"Invalid '$name' parameter value '$ip' - not an IPv6 address.");
+}
+
+// Retrieve a boolean parameter
+// $defVal: null: parameter is required
+function getParamBool(&$params,$name,$defVal = "")
+{
+    $val = getParam($params,$name);
+    if (null === $val) {
+	if (null === $defVal)
+	    return buildError(402,"Missing '$name' parameter.");
+	return $defVal;
+    }
+    if (!is_object($val)) {
+	switch ($val) {
+	    case true:
+	    case "true":
+	    case "yes":
+		return true;
+	    case false:
+	    case "false":
+	    case "no":
+		return false;
+	}
+    }
+    return buildError(401,"Invalid '$name' parameter value - not a boolean.");
+}
+
+// Retrieve a numeric parameter
+// $defVal: null: parameter is required
+// $clamp: false: return error if min/max are given and out of range
+function getParamInt(&$params,$name,$defVal = null,$minVal = null,$maxVal = null,$clamp = false)
+{
+    $val = getParam($params,$name);
+    if (null === $val) {
+	if (null === $defVal)
+	    return buildError(402,"Missing '$name' parameter.");
+	return $defVal;
+    }
+    $num = false;
+    if (is_numeric($val)) {
+	if ("0" == $val)
+	    $num = 0;
+	else if (0 == ($num = intval($val)))
+	    $num = false;
+    }
+    if (false === $num)
+	return buildError(401,"Invalid '$name' parameter value - not an integer number.");
+    if (is_numeric($minVal) && $num < $minVal) {
+	if ($clamp)
+	    return $minVal;
+	return buildError(401,"Invalid '$name' parameter value '$val' - out of range.");
+    }
+    if (is_numeric($maxVal) && $num > $maxVal) {
+	if ($clamp)
+	    return $maxVal;
+	return buildError(401,"Invalid '$name' parameter value '$val' - out of range.");
+    }
+    return $num;
+}
+
 function yateConnect($port,$track = "")
 {
     global $yate_connected;
