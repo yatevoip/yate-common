@@ -84,24 +84,44 @@ function setStorageError(error,reason,retVal)
 
 // Prepare a config file:
 // Load, clear, set updated info
-function prepareConf(name,msg,clear,custom)
+function prepareConf(name,msg,clear,custom,module,setNode,clearModSect)
 {
     if (!name)
-        return false;	
+	return false;
     var c = new ConfigFile(Engine.configFile(name));
     var l = c.getBoolValue("general","locked");
     if (false !== clear)
 	c.clearSection();
     if (isFilled(custom))
 	c.getSection("$include " + custom + ".conf",true);
-    c.setValue("general","updated",msg.received);
-    c.setValue("general","locked",l);
+    if (!module) {
+	c.setValue("general","updated",msg.received);
+	c.setValue("general","locked",l);
+    }
+    else {
+	// Specifc module configured in common file
+	if (clearModSect)
+	    c.clearSection(clearModSect);
+	if (setNode)
+	    c.setValue("general","updated",msg.received);
+	c.setValue("general","updated_" + module,msg.received);
+    }
     return c;
 }
 
 // Save config file, return proper error if locked or filesystem error
 function saveConf(error,conf)
 {
+    if (Array.isArray(conf)) {
+	for (var c of conf) {
+	    if (c) {
+		c = saveConf(error,c);
+		if (!c)
+		    return c;
+	    }
+	}
+	return true;
+    }
     if (conf.getBoolValue("general","locked"))
 	return setStorageError(error,"Locked config file '" + conf.name() + "'",false);
     if (conf.save())
