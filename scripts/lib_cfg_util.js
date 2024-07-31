@@ -84,14 +84,80 @@ function setStorageError(error,reason,retVal)
 
 // Prepare a config file:
 // Load, clear, set updated info
+// clear:
+//   false: Don't clear any section
+//   object: Clear section(s) if matching
+//      section_name: Array of objects. Object properties:
+//         match: RegExp to match section name
+//         value: String for exact section name match
+//      section_parameter: Array of objects. Object properties:
+//         name: Parameter name
+//         match: RegExp to match parameter value
+//         value: RegExp for exact parameter value match
+//      NOTE: 'general' section is ignored when matching 'section_parameter'.
+//          If you need to remove it also pass it in 'section_name' list
+//   otherwise: clear all sections
+// module: Module (section) name inside config file
+//   Set 'updated_' + module in 'general'
+// setNode: True if called from set_node. Set 'updated' in 'general' if true
+// clearModSect: True to clear module section
 function prepareConf(name,msg,clear,custom,module,setNode,clearModSect)
 {
     if (!name)
 	return false;
     var c = new ConfigFile(Engine.configFile(name));
     var l = c.getBoolValue("general","locked");
-    if (false !== clear)
-	c.clearSection();
+    if (false !== clear) {
+	if ("object" != typeof clear)
+	    c.clearSection();
+	else {
+	    if (!Array.isArray(var sectName = clear.section_name))
+		sectName = undefined;
+	    if (!Array.isArray(var pName = clear.section_parameter))
+		pName = undefined;
+	    if (sectName || pName) {
+		var sections = c.sections();
+		for (var sect of sections) {
+		    var sName = "" + sect;
+		    if (!sName)
+			continue;
+		    if (sectName) {
+			for (var match of sectName) {
+			    if (match.match) {
+				if (sName.match(match.match)) {
+				    sect = undefined;
+				    break;
+				}
+			    }
+			    if (match.value === sName) {
+				sect = undefined;
+				break;
+			    }
+			}
+		    }
+		    if (pName && sect && "general" != sName) {
+			for (var match of pName) {
+			    var val = sect.getValue(match.name,null);
+			    if (null === val)
+				continue;
+			    if (match.match) {
+				if (val.match(match.match)) {
+				    sect = undefined;
+				    break;
+				}
+			    }
+			    if (match.value === val) {
+				sect = undefined;
+				break;
+			    }
+			}
+		    }
+		    if (!sect)
+			c.clearSection(sName);
+		}
+	    }
+	}
+    }
     if (isFilled(custom))
 	c.getSection("$include " + custom + ".conf",true);
     if (!module) {
@@ -114,11 +180,10 @@ function saveConf(error,conf)
 {
     if (Array.isArray(conf)) {
 	for (var c of conf) {
-	    if (c) {
-		c = saveConf(error,c);
-		if (!c)
-		    return c;
-	    }
+	    if (!c)
+		continue;
+	    if (!(c = saveConf(error,c)))
+		return c;
 	}
 	return true;
     }
