@@ -383,22 +383,44 @@ function oneCompletion(msg,str,part)
 
 // Perform command line completion from object properties or array entries
 // 'key' present Perform object
-function multiCompletion(msg,obj,part,key)
+function multiCompletion(msg,obj,part,key,maxComplete)
 {
     if (!(obj && "object" == typeof obj))
 	return;
+    if (maxComplete > 0)
+	;
+    else
+	maxComplete = 0xffffffff;
     var ok = false;
     if (key) {
-	for (var s of obj)
-	    ok = oneCompletion(msg,s[key],part) || ok;
+	// Complete object property values
+	for (var s of obj) {
+	    if (!oneCompletion(msg,s[key],part))
+		continue;
+	    ok = true;
+	    if (--maxComplete <= 0)
+		break;
+	}
     }
     else if (Array.isArray(obj)) {
-	for (var s of obj)
-	    ok = oneCompletion(msg,s,part) || ok;
+	// Complete array of strings
+	for (var s of obj) {
+	    if (!oneCompletion(msg,s,part))
+		continue;
+	    ok = true;
+	    if (--maxComplete <= 0)
+		break;
+	}
     }
     else {
-	for (var s in obj)
-	    ok = oneCompletion(msg,s,part) || ok;
+	// Complete object property names
+	for (var s in obj) {
+	    if (!oneCompletion(msg,s,part))
+		continue;
+	    ok = true;
+	    if (--maxComplete <= 0)
+		break;
+	}
     }
     return ok;
 }
