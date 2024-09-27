@@ -463,8 +463,12 @@ function checkRequest($method = "POST")
 					$v = false;
 					break;
 				    case "0":
-					$v = 0;
-					break;
+					// evaluation protection for 00000000e3 which is == 0x10^3 == 0*1000 == "0" 
+					if ($v === "0") {
+					    $v = 0;
+					    break;
+					}
+					// otherwise let it pass to default:
 				    default:
 					if (preg_match('/^-?[1-9][0-9]*$/',$v))
 					    $v = (int) $v;
