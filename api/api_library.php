@@ -31,6 +31,16 @@ $cors_origin = "*";
 
 @include_once("/usr/share/yate/scripts/libyate.php");
 
+if (isset($yate_buffer_read_full_line)) {
+    // libyate.php supports read buffering
+    if (isset($api_yate_buffer_read_full_line))
+	$api_yate_buffer_read_full_line = !!$api_yate_buffer_read_full_line;
+    else
+	$api_yate_buffer_read_full_line = true;
+}
+else
+    $api_yate_buffer_read_full_line = null;
+
 function getParam($array,$name,$def = null)
 {
     return isset($array[$name]) ? $array[$name] : $def;
@@ -172,12 +182,21 @@ function getParamInt(&$params,$name,$defVal = null,$minVal = null,$maxVal = null
     return $num;
 }
 
-function yateConnect($port,$track = "")
+function yateConnect($port,$track = "",$readFullLine = null)
 {
-    global $yate_connected;
+    global $yate_connected, $api_yate_buffer_read_full_line;
     if (isset($yate_connected))
 	return $yate_connected;
-    $yate_connected = class_exists("Yate") && Yate::Init(true,"127.0.0.1",$port,"",65536);
+    if (null === $api_yate_buffer_read_full_line) // Not supported by libyate.php
+	$readFullLine = null;
+    else if (null === $readFullLine) // Use default
+	$readFullLine = $api_yate_buffer_read_full_line;
+    if (!class_exists("Yate"))
+	$yate_connected = false;
+    else if (null !== $readFullLine)
+	$yate_connected = Yate::Init(true,"127.0.0.1",$port,"",65536,$readFullLine);
+    else
+	$yate_connected = Yate::Init(true,"127.0.0.1",$port,"",65536);
     if ($yate_connected) {
 	Yate::Output(true);
 	Yate::Debug(true);
@@ -188,7 +207,8 @@ function yateConnect($port,$track = "")
     return $yate_connected;
 }
 
-function yateRequest($port,$type,$request,$params,$recv,$wait = 5,$close = true,$maxReq = null,$name = null)
+function yateRequest($port,$type,$request,$params,$recv,$wait = 5,$close = true,$maxReq = null,
+    $name = null,$readFullLine = null)
 {
     global $max_requests;
 
@@ -203,17 +223,18 @@ function yateRequest($port,$type,$request,$params,$recv,$wait = 5,$close = true,
 	return buildError(201,"Semaphore creation failed");
     if (!sem_acquire($sem))
 	return buildError(300,"Semaphore acquisition failed");
-    $ret = yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait,$close);
+    $ret = yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait,$close,$readFullLine);
     sem_release($sem);
     if ($maxReq < 0)
 	sem_remove($sem);
     return $ret;
 }
 
-function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$close = true)
+function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$close = true,
+    $readFullLine = null)
 {
-    global $yate_connected;
-    if (!yateConnect($port))
+    global $yate_connected, $yate_buffer_read_full_line;
+    if (!yateConnect($port,"",$readFullLine))
 	return buildError(200,"Cannot connect to Yate on port '$port'.");
     $msg = new Yate("api.request");
     $msg->SetParam("module","http_api");
@@ -267,7 +288,19 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
 		    $err = (int) $err;
 		return buildError($err,$ev->GetValue("reason"));
 	    }
-	    return buildSuccess($ev->retval,json_decode($ev->GetValue("json"),true));
+	    $str = $ev->GetValue("json");
+	    if (!$str)
+		return buildError(300,"Received empty JSON from Yate.");
+	    $json = json_decode($str,true);
+	    if (null !== $json || trim($str) == "null")
+		return buildSuccess($ev->retval,$json);
+	    $res = buildError(300,"Received invalid JSON from Yate.");
+	    if (isset($yate_buffer_read_full_line))
+		$res["yate_buffer_read_full_line"] = $yate_buffer_read_full_line;
+	    else
+		$res["yate_buffer_read_full_line"] = null;
+	    $res["data_length"] = strlen($str);
+	    return $res;
 	}
     }
     Yate::Quit(true);
