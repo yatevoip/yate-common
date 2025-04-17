@@ -289,7 +289,7 @@ function yateRequestUnrestricted($port,$type,$request,$params,$recv,$wait = 5,$c
 		return buildError($err,$ev->GetValue("reason"));
 	    }
 	    $str = $ev->GetValue("json");
-	    if (!$str)
+	    if (null === $str || !strlen($str))
 		return buildError(300,"Received empty JSON from Yate.");
 	    $json = json_decode($str,true);
 	    if (null !== $json || trim($str) == "null")
