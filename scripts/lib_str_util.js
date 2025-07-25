@@ -314,6 +314,28 @@ function checkInt(val,defVal,minVal,maxVal,clamp)
     return val;
 }
 
+// Validate a number. Convert 'val' to number if not already done
+// Clamp value in interval 0..maxVal or minVal..maxVal
+// Return:
+// - 'defVal' if given value is not a number
+// - 0 if 'val' is less than or equal to 0
+// - 'minVal' if 'val' is greater than 0 and less than 'minVal'
+// - 'maxVal' if 'val' is greater than 'maxVal'
+// Otherwise: given 'val'
+function checkIntClampMinVal0(val,defVal,minVal,maxVal)
+{
+    val = 1 * val;
+    if (isNaN(val))
+	return defVal;
+    if (val <= 0)
+	return 0;
+    if (!isNaN(minVal) && val < minVal)
+	return minVal;
+    if (!isNaN(maxVal) && val > maxVal)
+	return maxVal;
+    return val;
+}
+
 // Format time in milliseconds as seconds with 3 decimal places
 // Format time as hours (hrs is boolean true) or minutes (hrs is boolean false)
 function fmtTime(msec,hrs)
