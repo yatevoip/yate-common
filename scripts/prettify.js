@@ -68,6 +68,7 @@ function initialize(first)
     db_undefined = gen.getValue("db_undefined","");
     xml_spaces = gen.getIntValue("xml_spaces",2,2,20);
     json_spaces = gen.getIntValue("json_spaces",2,2,20);
+    file_read_max_len = gen.getIntValue("file_read_max_len",0,4096);
 
     statusFirstColName = {
 	Chan: /^(sip|sig|iax|jingle|h323|cdrbuild)$/,
@@ -122,6 +123,9 @@ function initialize(first)
 	    db_undefined: db_undefined,
 	    status_first_column_name: statusFirstColName,
 	    status_missing_fmt_columns: statusFmtMissingCols,
+	    xml_spaces: xml_spaces,
+	    json_spaces: json_spaces,
+	    file_read_max_len: file_read_max_len,
 	};
 	Engine.debug(Engine.DebugAll,"Initialized\r\n-----\r\n" + Engine.dump_var_r(config) + "\r\n-----");
     }
@@ -454,7 +458,7 @@ function printDiamStatus(what,msg,retVal,sections)
 	    params,
 	    ["route_priority","operational","crt_state_duration","prev_state_duration","down_alarms"]);
 	if (params.connection) {
-	    // NOTE: other connection related data:  send_queue, requests_queue, codec_queue
+	    // NOTE: other connection related data: send_queue, requests_queue, codec_queue
 	    str += "\r\n" + prettyDumpProps(
 		["Connection","Direction","Status","Type","Local addr","Remote addr"],
 		params,
@@ -491,6 +495,71 @@ function printDiamStatus(what,msg,retVal,sections)
 	    params,["listeners","connections","operational"]);
     }
     msg.retValue(str + "\r\n");
+    return true;
+}
+
+function prettifyData(what,data,msg)
+{
+    if ("xml" == what)
+	var params = {spaces:xml_spaces, compact_text:true};
+    else
+	var params = {spaces:json_spaces};
+    params.file_read_max_len = file_read_max_len;
+    if (!prettifyDataParamsMatch) {
+	prettifyDataParamsMatch = [];
+	for (var p in params)
+	    prettifyDataParamsMatch.push(p);
+	prettifyDataParamsMatch = new RegExp("^(" + prettifyDataParamsMatch.join("|") + ")=([^ ]+) (.*)$");
+    }
+    while (var m = data.match(prettifyDataParamsMatch)) {
+	var p = m[1];
+	switch (typeof params[p]) {
+	    case "boolean":
+		params[p] = parseBool(m[2],params[p]);
+		break;
+	    case "number":
+		if (!isNaN(var v = (1 * (m[2]))) && v > 0)
+		    params[p] = v;
+	}
+	data = m[3];
+	continue;
+    }
+    var fn = "";
+    if (data.startsWith("@")) {
+	fn = Engine.replaceParams(data.substr(1),Engine.runParams());
+	if (!fn) {
+	    msg.retValue("Empty filename\r\n");
+	    return true;
+	}
+	if (params.file_read_max_len < 10) {
+	    if (file_read_max_len)
+		params.file_read_max_len = file_read_max_len;
+	    else
+		params.file_read_max_len = undefined;
+	}
+	data = File.getContent(fn,undefined,params.file_read_max_len);
+	if (null === data) {
+	    msg.retValue("Failed to read " + fn + "\r\n");
+	    return true;
+	}
+    }
+    if ("xml" == what) {
+	if (data = new XML(data)) {
+	    if (params.compact_text && data.compactText)
+		data.compactText(true);
+	    data = data.xmlText(params.spaces);
+	}
+	else
+	    msg.retValue("Invalid XML\r\n");
+    }
+    else if (data = JSON.parse(data))
+	data = JSON.stringify(data,undefined,params.spaces);
+    else
+	msg.retValue("Invalid JSON\r\n");
+    if (!data)
+	return true;
+    data += "\r\n";
+    msg.retValue(data);
     return true;
 }
 
@@ -591,41 +660,21 @@ function onCommand(msg)
     var line = "" + msg.line;
     if (line) {
 	if (var m = line.match(/^prettify ([^ ]+) (.+)$/)) {
-	    var cmd = m[1];
-	    var data = m[2];
-	    switch (cmd) {
+	    switch (m[1]) {
 		case "status":
 		    return printStatus(msg,m[2]);
 		case "db":
 		    if (db_cmd) {
+			var data = m[2];
 			if (m = data.match(/^([^ ]+) (.+)$/))
 			    return printDbQuery(msg,m[1],m[2]);
 		    }
 		    return false;
 		case "xml":
 		case "json":
-		    if ("xml" == cmd)
-			var spaces = xml_spaces;
-		    else
-			var spaces = json_spaces;
-		    if (m = data.match(/^spaces=([1-9][0-9]*) (.*)$/)) {
-			data = m[2];
-			spaces = 1 * m[1];
-		    }
-		    if ("xml" == cmd) {
-			if (data = new XML(data))
-			    msg.retValue(data.xmlText(spaces) + "\r\n");
-			else
-			    msg.retValue("Invalid XML\r\n");
-			return true;
-		    }
-		    if (data = JSON.parse(data))
-			msg.retValue(JSON.stringify(data,undefined,spaces) + "\r\n");
-		    else
-			msg.retValue("Invalid JSON\r\n");
-		    return true;
+		    return prettifyData(m[1],m[2],msg);
 		case "result-status":
-		    return printStatus(msg,data,true);
+		    return printStatus(msg,m[2],true);
 	    }
 	    return false;
 	}
@@ -668,8 +717,10 @@ function onHelp(msg)
 	if (db_cmd)
 	    helpNice += "  prettify db <account> <query>\r\nPrettify database query result\r\n";
 	helpNice +=
-	    "  prettify {xml|json} [spaces={1-9}[0-9]] <str>\r\nPrettify requested data\r\n"
-	  + "  prettify result-status <str>\r\nPrettify an existing status result\r\n";
+	    "  prettify {xml|json} [spaces=] [file_read_max_len=] [compact_text=TRUE] <str>\r\n"
+	  + "Prettify requested data. Read it from file if starting with '@'\r\n"
+	  + "  prettify result-status <str>\r\n"
+	  + "Prettify an existing status result\r\n";
     }
     if (!help) {
 	var cfg = "status";
