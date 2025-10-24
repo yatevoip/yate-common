@@ -216,7 +216,7 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Sun Aug 22 2020 Paul Chitescu <paulc@null.ro>
+* Sat Aug 22 2020 Paul Chitescu <paulc@null.ro>
 - Added "start" subpackage
 
 * Wed Apr 30 2014 Paul Chitescu <paulc@null.ro>
