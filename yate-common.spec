@@ -111,7 +111,7 @@ done
 echo "%{name}" > "%{_tmppath}/yate-installing" 2>/dev/null
 
 mkdir -p /var/log/json_api
-chown -R apache.apache /var/log/json_api
+chown -R apache:apache /var/log/json_api
 
 if grep -q '^ *; *date\.timezone *=' %{_sysconfdir}/php.ini 2>/dev/null; then
     tz=`sed -n 's/^ *ZONE *= *//p' %{_sysconfdir}/sysconfig/clock 2>/dev/null`
