@@ -343,16 +343,22 @@ function fmtTime(msec,hrs)
     msec *= 1;
     if (isNaN(msec))
 	return "0";
+    if (msec >= 0)
+	var sign = "";
+    else {
+	var sign = "-";
+	msec = -msec;
+    }
     if (true === hrs) {
 	hrs = msec / 3600000;
-	msec = (Math.abs(msec) % 3600000) / 1000;
-	return hrs + ":" + strFix(msec / 60,-2,"0") + ":" + strFix(msec % 60,-2,"0");
+	msec = (msec % 3600000) / 1000;
+	return sign + hrs + ":" + strFix(msec / 60,-2,"0") + ":" + strFix(msec % 60,-2,"0");
     }
     if (false === hrs) {
 	msec /= 1000;
-	return (msec / 60) + ":" + strFix((Math.abs(msec) % 60),-2,"0");
+	return sign + (msec / 60) + ":" + strFix(msec % 60,-2,"0");
     }
-    return (msec / 1000) + "." + strFix((Math.abs(msec) % 1000),-3,"0");
+    return sign + (msec / 1000) + "." + strFix(msec % 1000,-3,"0");
 }
 
 // Format date and time: YYYY-MM-DD H:M:S[.mmm]
