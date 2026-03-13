@@ -377,6 +377,19 @@ function fmtDateTime(sec,msec)
     return d + strFix(msec,-3,"0");
 }
 
+// Helper that returns value for boolean input, optionally pads to specified length
+function valCond(cond,valTrue,valFalse,len,pad)
+{
+    if (!isNaN(1*len)) {
+	if (cond)
+	    return strFix(valTrue,len,pad);
+	return strFix(valFalse,len,pad);
+    }
+    if (cond)
+	return valTrue;
+    return valFalse;
+}
+
 // Helper that returns "yes" or "no" for boolean input, optionally pads to specified length
 function yesNo(val,len,pad)
 {
